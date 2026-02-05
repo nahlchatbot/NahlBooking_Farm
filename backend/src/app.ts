@@ -51,15 +51,38 @@ app.use('/api', routes);
 
 // Serve static files in production
 if (config.isProduction) {
-  // Serve admin portal
-  const adminPath = path.join(__dirname, '../../admin/dist');
-  app.use('/admin', express.static(adminPath));
-  app.get('/admin/*', (req, res) => {
-    res.sendFile(path.join(adminPath, 'index.html'));
+  // Resolve paths relative to project root (not dist folder)
+  const projectRoot = path.join(__dirname, '../..');
+  const adminPath = path.join(projectRoot, 'admin/dist');
+  const frontendPath = path.join(projectRoot, 'frontend');
+
+  console.log('Static file paths:');
+  console.log('  Admin:', adminPath);
+  console.log('  Frontend:', frontendPath);
+
+  // Serve admin portal - redirect /admin to /admin/
+  app.get('/admin', (req, res) => {
+    res.redirect('/admin/');
+  });
+
+  // Serve admin static files
+  app.use('/admin', express.static(adminPath, {
+    index: 'index.html',
+    fallthrough: true,
+  }));
+
+  // Admin SPA fallback
+  app.get('/admin/*', (req, res, next) => {
+    const indexPath = path.join(adminPath, 'index.html');
+    res.sendFile(indexPath, (err) => {
+      if (err) {
+        console.error('Admin index.html not found:', indexPath);
+        next(err);
+      }
+    });
   });
 
   // Serve frontend (customer website)
-  const frontendPath = path.join(__dirname, '../../frontend');
   app.use(express.static(frontendPath));
 
   // Serve booking view page
