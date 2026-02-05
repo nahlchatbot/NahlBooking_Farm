@@ -1,0 +1,116 @@
+{
+  "common": {
+    "appName": "منتجع المزرعة",
+    "dashboard": "لوحة التحكم",
+    "save": "حفظ",
+    "cancel": "إلغاء",
+    "delete": "حذف",
+    "edit": "تعديل",
+    "view": "عرض",
+    "search": "بحث",
+    "filter": "تصفية",
+    "export": "تصدير",
+    "loading": "جارٍ التحميل...",
+    "noData": "لا توجد بيانات",
+    "confirm": "تأكيد",
+    "yes": "نعم",
+    "no": "لا",
+    "language": "English",
+    "logout": "تسجيل الخروج"
+  },
+  "auth": {
+    "login": "تسجيل الدخول",
+    "email": "البريد الإلكتروني",
+    "password": "كلمة المرور",
+    "loginBtn": "دخول",
+    "loginError": "بيانات تسجيل الدخول غير صحيحة",
+    "welcome": "مرحباً بك في لوحة التحكم"
+  },
+  "sidebar": {
+    "dashboard": "لوحة التحكم",
+    "bookings": "الحجوزات",
+    "calendar": "التقويم",
+    "chalets": "الشاليهات",
+    "pricing": "الأسعار",
+    "blackout": "التواريخ المحجوبة",
+    "settings": "الإعدادات"
+  },
+  "dashboard": {
+    "title": "لوحة التحكم",
+    "todayBookings": "حجوزات اليوم",
+    "pendingConfirm": "بانتظار التأكيد",
+    "weekBookings": "حجوزات الأسبوع",
+    "revenue": "الإيرادات التقديرية",
+    "recentBookings": "أحدث الحجوزات",
+    "weeklyTrend": "اتجاه الحجوزات الأسبوعي"
+  },
+  "bookings": {
+    "title": "إدارة الحجوزات",
+    "ref": "رقم الحجز",
+    "date": "التاريخ",
+    "visitType": "نوع الزيارة",
+    "customer": "العميل",
+    "phone": "الجوال",
+    "guests": "الضيوف",
+    "chalet": "الشاليه",
+    "status": "الحالة",
+    "payment": "الدفع",
+    "actions": "إجراءات",
+    "confirmBooking": "تأكيد الحجز",
+    "cancelBooking": "إلغاء الحجز",
+    "sendReminder": "إرسال تذكير",
+    "viewDetails": "عرض التفاصيل",
+    "dayVisit": "زيارة نهارية",
+    "overnightStay": "إقامة ليلية",
+    "statuses": {
+      "PENDING": "قيد الانتظار",
+      "CONFIRMED": "مؤكد",
+      "CANCELLED": "ملغي",
+      "COMPLETED": "مكتمل"
+    },
+    "paymentStatuses": {
+      "PENDING": "غير مدفوع",
+      "DEPOSIT_PAID": "تم دفع العربون",
+      "FULLY_PAID": "مدفوع بالكامل",
+      "REFUNDED": "مسترد",
+      "CANCELLED": "ملغي"
+    }
+  },
+  "chalets": {
+    "title": "إدارة الشاليهات",
+    "name": "اسم الشاليه",
+    "capacity": "السعة",
+    "description": "الوصف",
+    "active": "نشط",
+    "inactive": "غير نشط"
+  },
+  "pricing": {
+    "title": "إدارة الأسعار",
+    "visitType": "نوع الزيارة",
+    "total": "الإجمالي",
+    "deposit": "العربون",
+    "sar": "ر.س"
+  },
+  "blackout": {
+    "title": "التواريخ المحجوبة",
+    "addDate": "إضافة تاريخ",
+    "date": "التاريخ",
+    "type": "النوع",
+    "reason": "السبب",
+    "both": "كلاهما",
+    "removeDate": "إزالة"
+  },
+  "settings": {
+    "title": "الإعدادات",
+    "whatsapp": "رقم الواتساب",
+    "greenapi": "إعدادات GreenAPI",
+    "templates": "قوالب الرسائل",
+    "contact": "معلومات التواصل"
+  },
+  "calendar": {
+    "title": "تقويم الحجوزات",
+    "today": "اليوم",
+    "month": "شهر",
+    "week": "أسبوع"
+  }
+}

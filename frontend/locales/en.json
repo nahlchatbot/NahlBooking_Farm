@@ -1,0 +1,163 @@
+{
+  "lang": "en",
+  "dir": "ltr",
+  "nav": {
+    "home": "Home",
+    "about": "About",
+    "chalets": "Chalets",
+    "experiences": "Experiences",
+    "booking": "Booking",
+    "contact": "Contact"
+  },
+  "hero": {
+    "title": "Farm Resort",
+    "subtitle": "Relax among the palms... Unforgettable serenity",
+    "cta": "Book Now"
+  },
+  "highlights": {
+    "title": "Why Farm Resort?",
+    "palm": "Palm Walkways",
+    "palmDesc": "Stroll through palm trees in peaceful rural ambiance",
+    "fire": "Fire Pit",
+    "fireDesc": "Evening gathering with complete fire pit setup",
+    "coffee": "Sunset Coffee",
+    "coffeeDesc": "Enjoy authentic Saudi coffee at sunset",
+    "clean": "Hotel-Grade Cleanliness",
+    "cleanDesc": "High cleanliness standards before every visit"
+  },
+  "chalets": {
+    "title": "Our Chalets",
+    "palmView": {
+      "name": "Palm View Chalet",
+      "desc": "Up to 4 guests · Outdoor seating · Best for tranquility",
+      "tags": ["Most Popular", "Palm View"]
+    },
+    "family": {
+      "name": "Family Chalet",
+      "desc": "Up to 8 guests · Larger space · Ideal for families",
+      "tags": ["Family", "Larger Space"]
+    },
+    "private": {
+      "name": "Private Chalet",
+      "desc": "Up to 6 guests · More privacy · For special occasions",
+      "tags": ["Privacy", "Events"]
+    },
+    "bookBtn": "Book This Chalet"
+  },
+  "experiences": {
+    "title": "Unique Experiences",
+    "sunset": {
+      "name": "Sunset Coffee",
+      "desc": "Enjoy sunset moments with Saudi coffee"
+    },
+    "fire": {
+      "name": "Fireside Evening",
+      "desc": "A warm night with family and friends"
+    },
+    "stars": {
+      "name": "Night Under the Stars",
+      "desc": "Clear skies and indescribable peace"
+    },
+    "photo": {
+      "name": "Rural Photography",
+      "desc": "Professional shots in natural settings"
+    }
+  },
+  "visitTypes": {
+    "title": "Choose Your Visit Type",
+    "day": {
+      "name": "Day Visit",
+      "time": "8:00 AM - 7:00 PM",
+      "features": ["Enjoy nature", "Outdoor seating", "Sunset coffee"]
+    },
+    "night": {
+      "name": "Overnight Stay",
+      "time": "8:00 PM - 7:00 AM",
+      "features": ["Fireside evening", "Starry night", "Morning breakfast"]
+    }
+  },
+  "booking": {
+    "title": "Book Your Visit",
+    "date": "Visit Date",
+    "visitType": "Visit Type",
+    "selectVisitType": "Select visit type",
+    "dayVisit": "Day Visit",
+    "overnightStay": "Overnight Stay",
+    "guests": "Number of Guests",
+    "chaletType": "Chalet Type (Optional)",
+    "selectLater": "Select later",
+    "name": "Full Name",
+    "namePlaceholder": "e.g., John Smith",
+    "phone": "Phone Number (WhatsApp)",
+    "phonePlaceholder": "9665xxxxxxxx",
+    "email": "Email (Optional)",
+    "notes": "Additional Notes",
+    "notesPlaceholder": "e.g., Fire pit setup / Special occasion...",
+    "submit": "Submit Booking Request",
+    "price": "Total: 1400 SAR — Deposit: 700 SAR",
+    "timeNote": "Day Visit = Morning · Overnight = Evening — Hours: Morning 8:00 → 19:00 · Evening 20:00 → 7:00",
+    "status": {
+      "selectDate": "Select date and visit type to check availability",
+      "checking": "⏳ Checking availability...",
+      "available": "✅ Available — You can complete your booking",
+      "unavailable": "❌ Sorry, this date is not available",
+      "submitting": "⏳ Submitting your request...",
+      "success": "✅ Booking request submitted successfully",
+      "error": "❌ An error occurred while saving",
+      "validation": "Please enter: date, visit type, name, and phone number"
+    },
+    "quickBook": {
+      "day": "Book Day Visit",
+      "night": "Book Overnight Stay"
+    }
+  },
+  "testimonials": {
+    "title": "What Our Guests Say",
+    "reviews": [
+      {
+        "text": "Unbelievable tranquility... The place is organized and souls find peace.",
+        "author": "Guest — Riyadh"
+      },
+      {
+        "text": "Best family experience... The kids loved it.",
+        "author": "Um Sarah — Jeddah"
+      },
+      {
+        "text": "The fire gathering was amazing... We'll be back soon.",
+        "author": "Abu Khaled — Dammam"
+      }
+    ]
+  },
+  "faq": {
+    "title": "Frequently Asked Questions",
+    "items": [
+      {
+        "q": "What are the visit hours?",
+        "a": "Day Visit: 8:00 → 19:00 · Overnight Stay: 20:00 → 7:00"
+      },
+      {
+        "q": "Can I cancel my booking?",
+        "a": "Yes, free cancellation up to 48 hours before your visit"
+      },
+      {
+        "q": "Is there parking?",
+        "a": "Yes, private and free parking for all guests"
+      }
+    ]
+  },
+  "contact": {
+    "title": "Contact Us",
+    "whatsapp": "Contact via WhatsApp",
+    "location": "Location on Map",
+    "concierge": "Concierge service available via WhatsApp"
+  },
+  "footer": {
+    "copyright": "© 2024 Farm Resort. All rights reserved.",
+    "privacy": "Privacy Policy",
+    "terms": "Terms & Conditions"
+  },
+  "common": {
+    "language": "العربية",
+    "bookNow": "Book Now"
+  }
+}

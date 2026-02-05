@@ -1,0 +1,21 @@
+{
+  "name": "farm-resort-booking",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "backend",
+    "admin"
+  ],
+  "scripts": {
+    "dev": "npm -w backend run dev",
+    "dev:admin": "npm -w admin run dev",
+    "build": "npm -w backend run build && npm -w admin run build",
+    "start": "npm -w backend run start",
+    "db:migrate": "npm -w backend run db:migrate",
+    "db:seed": "npm -w backend run db:seed",
+    "db:studio": "npm -w backend run db:studio"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

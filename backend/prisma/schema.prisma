@@ -1,0 +1,142 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Visit Types
+enum VisitType {
+  DAY_VISIT
+  OVERNIGHT_STAY
+}
+
+// Payment Status
+enum PaymentStatus {
+  PENDING
+  DEPOSIT_PAID
+  FULLY_PAID
+  REFUNDED
+  CANCELLED
+}
+
+// Booking Status
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+  COMPLETED
+}
+
+// Chalets
+model Chalet {
+  id          String    @id @default(uuid())
+  nameAr      String
+  nameEn      String
+  slug        String    @unique
+  maxGuests   Int
+  description String?
+  imageUrl    String?
+  isActive    Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  bookings    Booking[]
+}
+
+// Bookings
+model Booking {
+  id                 String        @id @default(uuid())
+  bookingRef         String        @unique
+
+  // Date and Visit Info
+  date               DateTime      @db.Date
+  visitType          VisitType
+
+  // Customer Info
+  customerName       String
+  customerPhone      String
+  email              String?
+  guests             Int           @default(2)
+  notes              String?
+  language           String        @default("ar")
+
+  // Status
+  status             BookingStatus @default(PENDING)
+  paymentStatus      PaymentStatus @default(PENDING)
+  adminConfirmed     Boolean       @default(false)
+
+  // Cancellation
+  cancelledAt        DateTime?
+  cancellationReason String?
+
+  // OTP for cancellation
+  otpCode            String?
+  otpExpiresAt       DateTime?
+
+  // Relations
+  chaletId           String?
+  chalet             Chalet?       @relation(fields: [chaletId], references: [id])
+
+  // Timestamps
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime      @updatedAt
+
+  @@index([date, visitType])
+  @@index([customerPhone])
+  @@index([bookingRef])
+  @@index([status])
+  @@index([createdAt])
+}
+
+// Blackout Dates
+model BlackoutDate {
+  id          String     @id @default(uuid())
+  date        DateTime   @db.Date
+  visitType   VisitType?
+  reason      String?
+  createdBy   String?
+  createdAt   DateTime   @default(now())
+
+  @@unique([date, visitType])
+  @@index([date])
+}
+
+// Pricing
+model Pricing {
+  id            String    @id @default(uuid())
+  visitType     VisitType @unique
+  totalPrice    Int
+  depositAmount Int
+  isActive      Boolean   @default(true)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+// Admin Users
+model AdminUser {
+  id           String    @id @default(uuid())
+  email        String    @unique
+  passwordHash String
+  name         String
+  isActive     Boolean   @default(true)
+  lastLoginAt  DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+}
+
+// System Settings
+model Setting {
+  key       String   @id
+  value     String
+  type      String   @default("string")
+  updatedAt DateTime @updatedAt
+}
+
+// Booking Counter (for generating booking refs)
+model BookingCounter {
+  year  Int @id
+  count Int @default(0)
+}

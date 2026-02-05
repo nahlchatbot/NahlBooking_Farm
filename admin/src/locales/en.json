@@ -1,0 +1,116 @@
+{
+  "common": {
+    "appName": "Farm Resort",
+    "dashboard": "Dashboard",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "view": "View",
+    "search": "Search",
+    "filter": "Filter",
+    "export": "Export",
+    "loading": "Loading...",
+    "noData": "No data available",
+    "confirm": "Confirm",
+    "yes": "Yes",
+    "no": "No",
+    "language": "العربية",
+    "logout": "Logout"
+  },
+  "auth": {
+    "login": "Login",
+    "email": "Email",
+    "password": "Password",
+    "loginBtn": "Sign In",
+    "loginError": "Invalid login credentials",
+    "welcome": "Welcome to the Admin Panel"
+  },
+  "sidebar": {
+    "dashboard": "Dashboard",
+    "bookings": "Bookings",
+    "calendar": "Calendar",
+    "chalets": "Chalets",
+    "pricing": "Pricing",
+    "blackout": "Blackout Dates",
+    "settings": "Settings"
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "todayBookings": "Today's Bookings",
+    "pendingConfirm": "Pending Confirmation",
+    "weekBookings": "This Week",
+    "revenue": "Est. Revenue",
+    "recentBookings": "Recent Bookings",
+    "weeklyTrend": "Weekly Booking Trend"
+  },
+  "bookings": {
+    "title": "Manage Bookings",
+    "ref": "Booking Ref",
+    "date": "Date",
+    "visitType": "Visit Type",
+    "customer": "Customer",
+    "phone": "Phone",
+    "guests": "Guests",
+    "chalet": "Chalet",
+    "status": "Status",
+    "payment": "Payment",
+    "actions": "Actions",
+    "confirmBooking": "Confirm Booking",
+    "cancelBooking": "Cancel Booking",
+    "sendReminder": "Send Reminder",
+    "viewDetails": "View Details",
+    "dayVisit": "Day Visit",
+    "overnightStay": "Overnight Stay",
+    "statuses": {
+      "PENDING": "Pending",
+      "CONFIRMED": "Confirmed",
+      "CANCELLED": "Cancelled",
+      "COMPLETED": "Completed"
+    },
+    "paymentStatuses": {
+      "PENDING": "Unpaid",
+      "DEPOSIT_PAID": "Deposit Paid",
+      "FULLY_PAID": "Fully Paid",
+      "REFUNDED": "Refunded",
+      "CANCELLED": "Cancelled"
+    }
+  },
+  "chalets": {
+    "title": "Manage Chalets",
+    "name": "Chalet Name",
+    "capacity": "Capacity",
+    "description": "Description",
+    "active": "Active",
+    "inactive": "Inactive"
+  },
+  "pricing": {
+    "title": "Manage Pricing",
+    "visitType": "Visit Type",
+    "total": "Total",
+    "deposit": "Deposit",
+    "sar": "SAR"
+  },
+  "blackout": {
+    "title": "Blackout Dates",
+    "addDate": "Add Date",
+    "date": "Date",
+    "type": "Type",
+    "reason": "Reason",
+    "both": "Both",
+    "removeDate": "Remove"
+  },
+  "settings": {
+    "title": "Settings",
+    "whatsapp": "WhatsApp Number",
+    "greenapi": "GreenAPI Settings",
+    "templates": "Message Templates",
+    "contact": "Contact Information"
+  },
+  "calendar": {
+    "title": "Booking Calendar",
+    "today": "Today",
+    "month": "Month",
+    "week": "Week"
+  }
+}
