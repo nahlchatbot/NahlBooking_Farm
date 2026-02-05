@@ -54,7 +54,7 @@ export default function Layout() {
 
       {/* Sidebar */}
       <aside
-        className={`fixed inset-y-0 start-0 z-40 w-64 bg-white shadow-lg transform transition-transform duration-300 lg:translate-x-0 ${
+        className={`fixed inset-y-0 start-0 z-40 w-64 bg-white shadow-lg transform transition-transform duration-300 lg:translate-x-0 lg:rtl:translate-x-0 ${
           sidebarOpen ? 'translate-x-0' : '-translate-x-full rtl:translate-x-full'
         }`}
       >
