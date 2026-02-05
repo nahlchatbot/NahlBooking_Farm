@@ -7,7 +7,9 @@
     "chalets": "الشاليهات",
     "experiences": "التجارب",
     "booking": "الحجز",
-    "contact": "تواصل معنا"
+    "bookNow": "احجز الآن",
+    "contact": "تواصل معنا",
+    "admin": "لوحة التحكم"
   },
   "hero": {
     "title": "منتجع المزرعة",

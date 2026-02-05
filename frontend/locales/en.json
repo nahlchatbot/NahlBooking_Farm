@@ -7,7 +7,9 @@
     "chalets": "Chalets",
     "experiences": "Experiences",
     "booking": "Booking",
-    "contact": "Contact"
+    "bookNow": "Book Now",
+    "contact": "Contact",
+    "admin": "Admin Panel"
   },
   "hero": {
     "title": "Farm Resort",
