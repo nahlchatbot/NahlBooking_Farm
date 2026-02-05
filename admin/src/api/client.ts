@@ -2,6 +2,8 @@ import axios from 'axios';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || '/api';
 
+console.log('[API CLIENT] Initializing with base URL:', API_BASE_URL);
+
 export const apiClient = axios.create({
   baseURL: API_BASE_URL,
   headers: {
@@ -12,6 +14,10 @@ export const apiClient = axios.create({
 // Add auth token to requests
 apiClient.interceptors.request.use((config) => {
   const token = localStorage.getItem('admin-token');
+  console.log(`[API REQUEST] ${config.method?.toUpperCase()} ${config.url}`, {
+    hasToken: !!token,
+    tokenPreview: token ? token.substring(0, 20) + '...' : 'none',
+  });
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
@@ -20,12 +26,33 @@ apiClient.interceptors.request.use((config) => {
 
 // Handle auth errors
 apiClient.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    console.log(`[API RESPONSE] ${response.config.url}`, {
+      status: response.status,
+      ok: response.data?.ok,
+    });
+    return response;
+  },
   (error) => {
+    console.error(`[API ERROR] ${error.config?.url}`, {
+      status: error.response?.status,
+      message: error.response?.data?.message,
+      data: error.response?.data,
+    });
+
     if (error.response?.status === 401) {
-      localStorage.removeItem('admin-token');
-      localStorage.removeItem('admin-user');
-      window.location.href = '/admin/login';
+      // Don't redirect if we're already on login page or if this is the login request
+      const isLoginRequest = error.config?.url?.includes('/auth/login');
+      const isOnLoginPage = window.location.pathname.includes('/login');
+
+      console.log('[API ERROR] 401 detected', { isLoginRequest, isOnLoginPage });
+
+      if (!isLoginRequest && !isOnLoginPage) {
+        console.log('[API ERROR] Clearing auth and redirecting to login');
+        localStorage.removeItem('admin-token');
+        localStorage.removeItem('admin-user');
+        window.location.href = '/admin/login';
+      }
     }
     return Promise.reject(error);
   }
