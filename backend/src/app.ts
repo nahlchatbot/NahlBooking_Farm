@@ -33,6 +33,9 @@ app.use(express.urlencoded({ extended: true }));
 app.get('/health', (req, res) => {
   res.json({ ok: true, message: 'Server is running' });
 });
+app.get('/api/health', (req, res) => {
+  res.json({ ok: true, message: 'Server is running', timestamp: new Date().toISOString() });
+});
 
 // API routes
 app.use('/api', routes);

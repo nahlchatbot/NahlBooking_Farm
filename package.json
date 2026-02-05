@@ -10,7 +10,8 @@
     "dev": "npm -w backend run dev",
     "dev:admin": "npm -w admin run dev",
     "build": "npm -w backend run build && npm -w admin run build",
-    "start": "npm -w backend run start",
+    "start": "npm -w backend run start:prod",
+    "start:simple": "npm -w backend run start",
     "db:migrate": "npm -w backend run db:migrate",
     "db:seed": "npm -w backend run db:seed",
     "db:studio": "npm -w backend run db:studio"
