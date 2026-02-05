@@ -51,12 +51,14 @@ app.use('/api', routes);
 
 // Serve static files in production
 if (config.isProduction) {
-  // Use process.cwd() - reliable on Railway (always project root /app/)
-  const adminPath = path.join(process.cwd(), 'admin/dist');
-  const frontendPath = path.join(process.cwd(), 'frontend');
+  // npm workspace runs from /app/backend, so go up one level to /app/
+  const projectRoot = path.join(process.cwd(), '..');
+  const adminPath = path.join(projectRoot, 'admin/dist');
+  const frontendPath = path.join(projectRoot, 'frontend');
 
-  console.log('Static file paths (using process.cwd):');
+  console.log('Static file paths:');
   console.log('  CWD:', process.cwd());
+  console.log('  Project root:', projectRoot);
   console.log('  Admin:', adminPath);
   console.log('  Frontend:', frontendPath);
 
