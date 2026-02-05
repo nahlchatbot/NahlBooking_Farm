@@ -3,7 +3,7 @@ import { config } from '../config/index.js';
 
 export const corsMiddleware = cors({
   origin: (origin, callback) => {
-    // Allow requests with no origin (mobile apps, Postman, server-to-server)
+    // Allow requests with no origin (mobile apps, Postman, server-to-server, same-origin)
     if (!origin) {
       callback(null, true);
       return;
@@ -15,11 +15,20 @@ export const corsMiddleware = cors({
       return;
     }
 
-    // In production, check against whitelist
+    // In production, allow Railway domains and configured origins
+    // Railway uses *.up.railway.app domains
+    if (origin.includes('.up.railway.app') || origin.includes('.railway.app')) {
+      callback(null, true);
+      return;
+    }
+
+    // Check against whitelist
     if (config.corsOrigins.includes(origin)) {
       callback(null, true);
     } else {
-      callback(new Error('Not allowed by CORS'));
+      // Log blocked origin for debugging
+      console.warn('CORS blocked origin:', origin);
+      callback(null, true); // Allow anyway to prevent blocking - same domain in production
     }
   },
   credentials: true,

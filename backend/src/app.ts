@@ -62,14 +62,30 @@ if (config.isProduction) {
   console.log('  Admin:', adminPath);
   console.log('  Frontend:', frontendPath);
 
-  // Serve admin static files (CSS, JS, assets)
-  app.use('/admin/assets', express.static(path.join(adminPath, 'assets')));
+  // Check if directories exist
+  import('fs').then(fs => {
+    console.log('  Admin exists:', fs.existsSync(adminPath));
+    console.log('  Admin/assets exists:', fs.existsSync(path.join(adminPath, 'assets')));
+    console.log('  Frontend exists:', fs.existsSync(frontendPath));
+    if (fs.existsSync(adminPath)) {
+      console.log('  Admin contents:', fs.readdirSync(adminPath));
+    }
+  });
 
-  // Admin SPA - serve index.html for all /admin routes
+  // Serve ALL admin files (not just assets subfolder)
+  app.use('/admin', express.static(adminPath, {
+    index: false, // Don't auto-serve index.html, we handle that below
+  }));
+
+  // Admin SPA - serve index.html for /admin and /admin/* routes (not assets)
   app.get('/admin', (req, res) => {
     res.sendFile(path.join(adminPath, 'index.html'));
   });
-  app.get('/admin/*', (req, res) => {
+  app.get('/admin/*', (req, res, next) => {
+    // Skip if this looks like a file request (has extension)
+    if (req.path.includes('.')) {
+      return next();
+    }
     res.sendFile(path.join(adminPath, 'index.html'));
   });
 
