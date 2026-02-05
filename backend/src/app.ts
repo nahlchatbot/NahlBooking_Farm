@@ -60,26 +60,15 @@ if (config.isProduction) {
   console.log('  Admin:', adminPath);
   console.log('  Frontend:', frontendPath);
 
-  // Serve admin portal - redirect /admin to /admin/
+  // Serve admin static files (CSS, JS, assets)
+  app.use('/admin/assets', express.static(path.join(adminPath, 'assets')));
+
+  // Admin SPA - serve index.html for all /admin routes
   app.get('/admin', (req, res) => {
-    res.redirect('/admin/');
+    res.sendFile(path.join(adminPath, 'index.html'));
   });
-
-  // Serve admin static files
-  app.use('/admin', express.static(adminPath, {
-    index: 'index.html',
-    fallthrough: true,
-  }));
-
-  // Admin SPA fallback
-  app.get('/admin/*', (req, res, next) => {
-    const indexPath = path.join(adminPath, 'index.html');
-    res.sendFile(indexPath, (err) => {
-      if (err) {
-        console.error('Admin index.html not found:', indexPath);
-        next(err);
-      }
-    });
+  app.get('/admin/*', (req, res) => {
+    res.sendFile(path.join(adminPath, 'index.html'));
   });
 
   // Serve frontend (customer website)
