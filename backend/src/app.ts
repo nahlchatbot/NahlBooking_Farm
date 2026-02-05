@@ -13,6 +13,10 @@ const __dirname = path.dirname(__filename);
 
 const app = express();
 
+// Trust proxy - required for Railway/cloud deployments behind reverse proxy
+// This enables correct client IP detection for rate limiting
+app.set('trust proxy', 1);
+
 // Security middleware
 app.use(helmet({
   contentSecurityPolicy: {
