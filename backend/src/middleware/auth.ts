@@ -3,10 +3,13 @@ import jwt from 'jsonwebtoken';
 import { config } from '../config/index.js';
 import prisma from '../config/database.js';
 
+import { AdminRole } from '@prisma/client';
+
 export interface AdminPayload {
   id: string;
   email: string;
   name: string;
+  role: AdminRole;
 }
 
 declare global {
@@ -38,7 +41,7 @@ export async function authenticateAdmin(
       // Verify admin still exists and is active
       const admin = await prisma.adminUser.findUnique({
         where: { id: decoded.id },
-        select: { id: true, email: true, name: true, isActive: true },
+        select: { id: true, email: true, name: true, role: true, isActive: true },
       });
 
       if (!admin || !admin.isActive) {
@@ -50,6 +53,7 @@ export async function authenticateAdmin(
         id: admin.id,
         email: admin.email,
         name: admin.name,
+        role: admin.role,
       };
 
       next();

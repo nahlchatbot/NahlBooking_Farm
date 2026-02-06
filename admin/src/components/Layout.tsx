@@ -3,24 +3,37 @@ import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '../store/auth';
 import {
   LayoutDashboard,
-  Calendar,
+  ClipboardList,
+  CalendarDays,
   Home,
   DollarSign,
   CalendarX,
+  BarChart2,
   Settings,
   LogOut,
   Menu,
   X,
   Globe,
+  Users,
 } from 'lucide-react';
 import { useState } from 'react';
 
-const navItems = [
+interface NavItem {
+  path: string;
+  icon: typeof LayoutDashboard;
+  label: string;
+  requireSuperAdmin?: boolean;
+}
+
+const navItems: NavItem[] = [
   { path: '/', icon: LayoutDashboard, label: 'sidebar.dashboard' },
-  { path: '/bookings', icon: Calendar, label: 'sidebar.bookings' },
+  { path: '/bookings', icon: ClipboardList, label: 'sidebar.bookings' },
+  { path: '/calendar', icon: CalendarDays, label: 'sidebar.calendar' },
   { path: '/chalets', icon: Home, label: 'sidebar.chalets' },
   { path: '/pricing', icon: DollarSign, label: 'sidebar.pricing' },
   { path: '/blackout', icon: CalendarX, label: 'sidebar.blackout' },
+  { path: '/reports', icon: BarChart2, label: 'sidebar.reports' },
+  { path: '/users', icon: Users, label: 'sidebar.users', requireSuperAdmin: true },
   { path: '/settings', icon: Settings, label: 'sidebar.settings' },
 ];
 
@@ -69,24 +82,26 @@ export default function Layout() {
 
           {/* Navigation */}
           <nav className="flex-1 p-4 space-y-1">
-            {navItems.map((item) => (
-              <NavLink
-                key={item.path}
-                to={item.path}
-                end={item.path === '/'}
-                onClick={() => setSidebarOpen(false)}
-                className={({ isActive }) =>
-                  `flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
-                    isActive
-                      ? 'bg-primary-50 text-primary-700 font-medium'
-                      : 'text-gray-600 hover:bg-gray-50'
-                  }`
-                }
-              >
-                <item.icon size={20} />
-                <span>{t(item.label)}</span>
-              </NavLink>
-            ))}
+            {navItems
+              .filter((item) => !item.requireSuperAdmin || user?.role === 'SUPER_ADMIN')
+              .map((item) => (
+                <NavLink
+                  key={item.path}
+                  to={item.path}
+                  end={item.path === '/'}
+                  onClick={() => setSidebarOpen(false)}
+                  className={({ isActive }) =>
+                    `flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
+                      isActive
+                        ? 'bg-primary-50 text-primary-700 font-medium'
+                        : 'text-gray-600 hover:bg-gray-50'
+                    }`
+                  }
+                >
+                  <item.icon size={20} />
+                  <span>{t(item.label)}</span>
+                </NavLink>
+              ))}
           </nav>
 
           {/* User section */}

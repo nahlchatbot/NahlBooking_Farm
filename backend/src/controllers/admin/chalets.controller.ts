@@ -1,7 +1,17 @@
 import { Request, Response, NextFunction } from 'express';
 import prisma from '../../config/database.js';
 import { successResponse, errorResponse } from '../../utils/response.js';
-import { UpdateChaletInput } from '../../types/validation.js';
+import { CreateChaletInput, UpdateChaletInput } from '../../types/validation.js';
+import { createAuditLog } from '../../services/audit.service.js';
+
+function generateSlug(name: string): string {
+  return name
+    .toLowerCase()
+    .replace(/[^\w\s-]/g, '')
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-')
+    .trim();
+}
 
 export async function listChaletsHandler(
   req: Request,
@@ -10,8 +20,11 @@ export async function listChaletsHandler(
 ): Promise<void> {
   try {
     const chalets = await prisma.chalet.findMany({
-      orderBy: { createdAt: 'asc' },
+      orderBy: { sortOrder: 'asc' },
       include: {
+        images: {
+          orderBy: { sortOrder: 'asc' },
+        },
         _count: {
           select: { bookings: true },
         },
@@ -35,6 +48,9 @@ export async function getChaletHandler(
     const chalet = await prisma.chalet.findUnique({
       where: { id },
       include: {
+        images: {
+          orderBy: { sortOrder: 'asc' },
+        },
         bookings: {
           take: 10,
           orderBy: { createdAt: 'desc' },
@@ -64,6 +80,47 @@ export async function getChaletHandler(
   }
 }
 
+export async function createChaletHandler(
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> {
+  try {
+    const data = req.body as CreateChaletInput;
+
+    // Generate slug from English name
+    let slug = generateSlug(data.nameEn);
+
+    // Ensure slug is unique
+    const existingSlug = await prisma.chalet.findUnique({ where: { slug } });
+    if (existingSlug) {
+      slug = `${slug}-${Date.now()}`;
+    }
+
+    const chalet = await prisma.chalet.create({
+      data: {
+        ...data,
+        slug,
+      },
+      include: {
+        images: true,
+      },
+    });
+
+    await createAuditLog({
+      action: 'CREATE',
+      entity: 'Chalet',
+      entityId: chalet.id,
+      changes: { nameEn: data.nameEn, nameAr: data.nameAr },
+      req,
+    });
+
+    successResponse(res, 'تم إنشاء الشاليه بنجاح', chalet, 201);
+  } catch (error) {
+    next(error);
+  }
+}
+
 export async function updateChaletHandler(
   req: Request,
   res: Response,
@@ -85,9 +142,171 @@ export async function updateChaletHandler(
     const updated = await prisma.chalet.update({
       where: { id },
       data: updates,
+      include: {
+        images: {
+          orderBy: { sortOrder: 'asc' },
+        },
+      },
+    });
+
+    await createAuditLog({
+      action: 'UPDATE',
+      entity: 'Chalet',
+      entityId: id,
+      changes: updates,
+      req,
     });
 
     successResponse(res, 'تم تحديث الشاليه', updated);
+  } catch (error) {
+    next(error);
+  }
+}
+
+export async function deleteChaletHandler(
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> {
+  try {
+    const { id } = req.params;
+
+    const chalet = await prisma.chalet.findUnique({
+      where: { id },
+      include: {
+        _count: { select: { bookings: true } },
+      },
+    });
+
+    if (!chalet) {
+      errorResponse(res, 'الشاليه غير موجود', 404);
+      return;
+    }
+
+    // Check if chalet has bookings
+    if (chalet._count.bookings > 0) {
+      errorResponse(res, 'لا يمكن حذف الشاليه لوجود حجوزات مرتبطة به', 400);
+      return;
+    }
+
+    await prisma.chalet.delete({
+      where: { id },
+    });
+
+    await createAuditLog({
+      action: 'DELETE',
+      entity: 'Chalet',
+      entityId: id,
+      changes: { nameEn: chalet.nameEn, nameAr: chalet.nameAr },
+      req,
+    });
+
+    successResponse(res, 'تم حذف الشاليه بنجاح');
+  } catch (error) {
+    next(error);
+  }
+}
+
+// Image management
+export async function addChaletImageHandler(
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> {
+  try {
+    const { id } = req.params;
+    const { url, caption } = req.body;
+
+    const chalet = await prisma.chalet.findUnique({
+      where: { id },
+    });
+
+    if (!chalet) {
+      errorResponse(res, 'الشاليه غير موجود', 404);
+      return;
+    }
+
+    // Get max sort order
+    const maxOrder = await prisma.chaletImage.findFirst({
+      where: { chaletId: id },
+      orderBy: { sortOrder: 'desc' },
+      select: { sortOrder: true },
+    });
+
+    const image = await prisma.chaletImage.create({
+      data: {
+        url,
+        caption,
+        chaletId: id,
+        sortOrder: (maxOrder?.sortOrder || 0) + 1,
+      },
+    });
+
+    successResponse(res, 'تم إضافة الصورة بنجاح', image, 201);
+  } catch (error) {
+    next(error);
+  }
+}
+
+export async function deleteChaletImageHandler(
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> {
+  try {
+    const { id, imageId } = req.params;
+
+    const image = await prisma.chaletImage.findFirst({
+      where: {
+        id: imageId,
+        chaletId: id,
+      },
+    });
+
+    if (!image) {
+      errorResponse(res, 'الصورة غير موجودة', 404);
+      return;
+    }
+
+    await prisma.chaletImage.delete({
+      where: { id: imageId },
+    });
+
+    successResponse(res, 'تم حذف الصورة بنجاح');
+  } catch (error) {
+    next(error);
+  }
+}
+
+export async function reorderChaletImagesHandler(
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> {
+  try {
+    const { id } = req.params;
+    const { imageIds } = req.body as { imageIds: string[] };
+
+    const chalet = await prisma.chalet.findUnique({
+      where: { id },
+    });
+
+    if (!chalet) {
+      errorResponse(res, 'الشاليه غير موجود', 404);
+      return;
+    }
+
+    // Update sort order for each image
+    await Promise.all(
+      imageIds.map((imageId, index) =>
+        prisma.chaletImage.update({
+          where: { id: imageId },
+          data: { sortOrder: index },
+        })
+      )
+    );
+
+    successResponse(res, 'تم تحديث ترتيب الصور');
   } catch (error) {
     next(error);
   }

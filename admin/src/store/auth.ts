@@ -1,9 +1,12 @@
 import { create } from 'zustand';
 
+export type AdminRole = 'SUPER_ADMIN' | 'ADMIN' | 'VIEWER';
+
 interface User {
   id: string;
   email: string;
   name: string;
+  role: AdminRole;
 }
 
 interface AuthState {

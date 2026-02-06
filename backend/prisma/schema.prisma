@@ -30,20 +30,44 @@ enum BookingStatus {
   COMPLETED
 }
 
+// Admin Roles
+enum AdminRole {
+  SUPER_ADMIN
+  ADMIN
+  VIEWER
+}
+
 // Chalets
 model Chalet {
-  id          String    @id @default(uuid())
-  nameAr      String
-  nameEn      String
-  slug        String    @unique
-  maxGuests   Int
-  description String?
-  imageUrl    String?
-  isActive    Boolean   @default(true)
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  id            String    @id @default(uuid())
+  nameAr        String
+  nameEn        String
+  slug          String    @unique
+  maxGuests     Int
+  descriptionAr String?
+  descriptionEn String?
+  amenities     String[]  @default([])
+  imageUrl      String?
+  sortOrder     Int       @default(0)
+  isActive      Boolean   @default(true)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
 
-  bookings    Booking[]
+  bookings      Booking[]
+  images        ChaletImage[]
+}
+
+// Chalet Images
+model ChaletImage {
+  id        String   @id @default(uuid())
+  url       String
+  caption   String?
+  sortOrder Int      @default(0)
+  chaletId  String
+  chalet    Chalet   @relation(fields: [chaletId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@index([chaletId])
 }
 
 // Bookings
@@ -117,14 +141,40 @@ model Pricing {
 
 // Admin Users
 model AdminUser {
-  id           String    @id @default(uuid())
-  email        String    @unique
+  id           String     @id @default(uuid())
+  email        String     @unique
   passwordHash String
   name         String
-  isActive     Boolean   @default(true)
+  role         AdminRole  @default(ADMIN)
+  phone        String?
+  avatar       String?
+  isActive     Boolean    @default(true)
   lastLoginAt  DateTime?
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
+  createdById  String?
+  createdBy    AdminUser? @relation("CreatedByAdmin", fields: [createdById], references: [id])
+  createdUsers AdminUser[] @relation("CreatedByAdmin")
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  auditLogs    AuditLog[]
+}
+
+// Audit Log
+model AuditLog {
+  id         String    @id @default(uuid())
+  action     String    // CREATE, UPDATE, DELETE, LOGIN, LOGOUT, etc.
+  entity     String    // Booking, Chalet, Setting, etc.
+  entityId   String?   // ID of the affected entity
+  changes    String?   // JSON string of changes made
+  ipAddress  String?
+  userAgent  String?
+  adminId    String
+  admin      AdminUser @relation(fields: [adminId], references: [id])
+  createdAt  DateTime  @default(now())
+
+  @@index([adminId])
+  @@index([entity, entityId])
+  @@index([createdAt])
 }
 
 // System Settings

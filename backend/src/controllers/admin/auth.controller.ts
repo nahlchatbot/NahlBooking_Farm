@@ -41,6 +41,7 @@ export async function loginHandler(
       id: admin.id,
       email: admin.email,
       name: admin.name,
+      role: admin.role,
     });
 
     successResponse(res, 'تم تسجيل الدخول بنجاح', {
@@ -49,6 +50,7 @@ export async function loginHandler(
         id: admin.id,
         email: admin.email,
         name: admin.name,
+        role: admin.role,
       },
     });
   } catch (error) {

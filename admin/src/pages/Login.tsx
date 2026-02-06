@@ -15,20 +15,10 @@ export default function Login() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const [debugInfo, setDebugInfo] = useState<string[]>([]);
-
-  const addDebug = (msg: string) => {
-    console.log('[LOGIN DEBUG]', msg);
-    setDebugInfo(prev => [...prev, `${new Date().toISOString().slice(11, 19)} - ${msg}`]);
-  };
 
   // Redirect if already authenticated
   useEffect(() => {
-    addDebug(`Component mounted. isAuthenticated: ${isAuthenticated}`);
-    addDebug(`localStorage token: ${localStorage.getItem('admin-token') ? 'EXISTS' : 'NULL'}`);
-
     if (isAuthenticated) {
-      addDebug('Already authenticated, redirecting to /');
       navigate('/', { replace: true });
     }
   }, [isAuthenticated, navigate]);
@@ -37,32 +27,21 @@ export default function Login() {
     e.preventDefault();
     setError('');
     setLoading(true);
-    addDebug(`Submitting login for: ${email}`);
 
     try {
-      addDebug('Calling authApi.login...');
       const response = await authApi.login(email, password);
-      addDebug(`Response received: ${JSON.stringify(response)}`);
 
       if (response.ok) {
-        addDebug('Login successful, calling store.login()');
         login(response.data.token, response.data.user);
-
-        addDebug(`Token stored: ${localStorage.getItem('admin-token') ? 'YES' : 'NO'}`);
-        addDebug('Navigating to /...');
 
         // Small delay to ensure state is propagated
         setTimeout(() => {
-          addDebug('Executing navigate("/")');
           navigate('/', { replace: true });
         }, 100);
       } else {
-        addDebug(`Login failed: ${response.message}`);
         setError(response.message || t('auth.loginError'));
       }
     } catch (err: any) {
-      addDebug(`Exception caught: ${err?.message || err}`);
-      addDebug(`Error response: ${JSON.stringify(err?.response?.data)}`);
       setError(t('auth.loginError'));
     } finally {
       setLoading(false);
@@ -147,16 +126,6 @@ export default function Login() {
               {t('auth.loginBtn')}
             </button>
           </form>
-
-          {/* Debug panel */}
-          {debugInfo.length > 0 && (
-            <div className="mt-4 p-3 bg-gray-100 rounded-lg text-xs font-mono max-h-48 overflow-auto">
-              <div className="font-bold mb-2">Debug Log:</div>
-              {debugInfo.map((msg, i) => (
-                <div key={i} className="text-gray-600">{msg}</div>
-              ))}
-            </div>
-          )}
         </div>
       </div>
     </div>

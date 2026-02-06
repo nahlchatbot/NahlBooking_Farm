@@ -1,4 +1,4 @@
-import { PrismaClient, VisitType } from '@prisma/client';
+import { PrismaClient, VisitType, AdminRole } from '@prisma/client';
 import bcrypt from 'bcrypt';
 
 const prisma = new PrismaClient();
@@ -13,21 +13,30 @@ async function main() {
       nameEn: 'Palm View Chalet',
       slug: 'palm-view',
       maxGuests: 4,
-      description: 'أفضل خيار للهدوء مع إطلالة على النخيل',
+      descriptionAr: 'أفضل خيار للهدوء مع إطلالة على النخيل',
+      descriptionEn: 'Best choice for tranquility with a palm view',
+      amenities: ['wifi', 'pool', 'bbq', 'parking'],
+      sortOrder: 1,
     },
     {
       nameAr: 'شاليه عائلي',
       nameEn: 'Family Chalet',
       slug: 'family',
       maxGuests: 8,
-      description: 'مساحة أوسع مناسبة للعائلات',
+      descriptionAr: 'مساحة أوسع مناسبة للعائلات',
+      descriptionEn: 'Spacious area suitable for families',
+      amenities: ['wifi', 'pool', 'bbq', 'parking', 'playground'],
+      sortOrder: 2,
     },
     {
       nameAr: 'شاليه خاص',
       nameEn: 'Private Chalet',
       slug: 'private',
       maxGuests: 6,
-      description: 'خصوصية أعلى للمناسبات الخاصة',
+      descriptionAr: 'خصوصية أعلى للمناسبات الخاصة',
+      descriptionEn: 'Higher privacy for special occasions',
+      amenities: ['wifi', 'pool', 'bbq', 'parking', 'jacuzzi'],
+      sortOrder: 3,
     },
   ];
 
@@ -62,11 +71,12 @@ async function main() {
 
   await prisma.adminUser.upsert({
     where: { email: adminEmail },
-    update: {},
+    update: { role: AdminRole.SUPER_ADMIN },
     create: {
       email: adminEmail,
       passwordHash,
       name: 'Admin',
+      role: AdminRole.SUPER_ADMIN,
     },
   });
   console.log(`✓ Admin user seeded (${adminEmail})`);

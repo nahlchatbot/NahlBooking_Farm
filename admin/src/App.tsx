@@ -4,10 +4,14 @@ import Layout from './components/Layout';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import Bookings from './pages/Bookings';
+import Calendar from './pages/Calendar';
 import Chalets from './pages/Chalets';
 import Pricing from './pages/Pricing';
 import BlackoutDates from './pages/BlackoutDates';
+import Reports from './pages/Reports';
+import AdminUsers from './pages/AdminUsers';
 import Settings from './pages/Settings';
+import { Toaster } from './components/ui';
 
 function PrivateRoute({ children }: { children: React.ReactNode }) {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
@@ -16,25 +20,31 @@ function PrivateRoute({ children }: { children: React.ReactNode }) {
 
 function App() {
   return (
-    <Routes>
-      <Route path="/login" element={<Login />} />
-      <Route
-        path="/"
-        element={
-          <PrivateRoute>
-            <Layout />
-          </PrivateRoute>
-        }
-      >
-        <Route index element={<Dashboard />} />
-        <Route path="bookings" element={<Bookings />} />
-        <Route path="chalets" element={<Chalets />} />
-        <Route path="pricing" element={<Pricing />} />
-        <Route path="blackout" element={<BlackoutDates />} />
-        <Route path="settings" element={<Settings />} />
-      </Route>
-      <Route path="*" element={<Navigate to="/" replace />} />
-    </Routes>
+    <>
+      <Toaster />
+      <Routes>
+        <Route path="/login" element={<Login />} />
+        <Route
+          path="/"
+          element={
+            <PrivateRoute>
+              <Layout />
+            </PrivateRoute>
+          }
+        >
+          <Route index element={<Dashboard />} />
+          <Route path="bookings" element={<Bookings />} />
+          <Route path="calendar" element={<Calendar />} />
+          <Route path="chalets" element={<Chalets />} />
+          <Route path="pricing" element={<Pricing />} />
+          <Route path="blackout" element={<BlackoutDates />} />
+          <Route path="reports" element={<Reports />} />
+          <Route path="users" element={<AdminUsers />} />
+          <Route path="settings" element={<Settings />} />
+        </Route>
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </>
   );
 }
 
