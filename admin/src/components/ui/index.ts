@@ -27,7 +27,7 @@ export { Toaster, toast } from './Toast';
 export { ConfirmDialog } from './ConfirmDialog';
 
 // Tabs
-export { Tabs, TabList, TabButton } from './Tabs';
+export { Tabs, TabList, TabButton, SimpleTabs } from './Tabs';
 
 // Table
 export { Table, Pagination } from './Table';

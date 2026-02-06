@@ -13,7 +13,7 @@ import { reportsApi } from '../api/client';
 import { Card, CardHeader, CardTitle, CardContent } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { Badge } from '../components/ui/Badge';
-import { Tabs } from '../components/ui/Tabs';
+import { SimpleTabs } from '../components/ui/Tabs';
 import { Skeleton } from '../components/ui/Skeleton';
 import { TableRoot as Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '../components/ui/Table';
 import clsx from 'clsx';
@@ -131,7 +131,7 @@ export default function Reports() {
       </Card>
 
       {/* Tabs */}
-      <Tabs
+      <SimpleTabs
         tabs={tabs}
         activeTab={activeTab}
         onChange={setActiveTab}

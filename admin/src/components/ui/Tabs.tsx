@@ -98,3 +98,43 @@ export function TabButton({ active, onClick, children, className }: TabButtonPro
     </button>
   );
 }
+
+// Simple controlled tabs component
+interface SimpleTab {
+  id: string;
+  label: string;
+  icon?: React.ComponentType<{ className?: string }>;
+}
+
+interface SimpleTabsProps {
+  tabs: SimpleTab[];
+  activeTab: string;
+  onChange: (tabId: string) => void;
+  className?: string;
+}
+
+export function SimpleTabs({ tabs, activeTab, onChange, className }: SimpleTabsProps) {
+  return (
+    <div className={cn('flex gap-1 p-1 bg-gray-100 rounded-lg w-fit', className)}>
+      {tabs.map((tab) => {
+        const Icon = tab.icon;
+        const isActive = tab.id === activeTab;
+        return (
+          <button
+            key={tab.id}
+            onClick={() => onChange(tab.id)}
+            className={cn(
+              'flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-md transition-all duration-200',
+              isActive
+                ? 'bg-white text-gray-900 shadow-sm'
+                : 'text-gray-600 hover:text-gray-900'
+            )}
+          >
+            {Icon && <Icon className="w-4 h-4" />}
+            {tab.label}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
