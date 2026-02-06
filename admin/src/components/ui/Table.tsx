@@ -1,6 +1,43 @@
-import { ReactNode, useState } from 'react';
+import { ReactNode, useState, HTMLAttributes, TdHTMLAttributes, ThHTMLAttributes } from 'react';
 import { ChevronUp, ChevronDown, ChevronsUpDown } from 'lucide-react';
 import { cn } from '../../lib/utils';
+
+// Simple table primitives for custom layouts
+export function TableRoot({ className, ...props }: HTMLAttributes<HTMLTableElement>) {
+  return (
+    <div className="overflow-x-auto">
+      <table className={cn('w-full', className)} {...props} />
+    </div>
+  );
+}
+
+export function TableHeader({ className, ...props }: HTMLAttributes<HTMLTableSectionElement>) {
+  return <thead className={cn('bg-gray-50 border-b', className)} {...props} />;
+}
+
+export function TableBody({ className, ...props }: HTMLAttributes<HTMLTableSectionElement>) {
+  return <tbody className={cn('divide-y divide-gray-200', className)} {...props} />;
+}
+
+export function TableRow({ className, ...props }: HTMLAttributes<HTMLTableRowElement>) {
+  return <tr className={cn('hover:bg-gray-50', className)} {...props} />;
+}
+
+export function TableHead({ className, ...props }: ThHTMLAttributes<HTMLTableCellElement>) {
+  return (
+    <th
+      className={cn(
+        'px-4 py-3 text-start text-xs font-semibold text-gray-600 uppercase tracking-wider',
+        className
+      )}
+      {...props}
+    />
+  );
+}
+
+export function TableCell({ className, ...props }: TdHTMLAttributes<HTMLTableCellElement>) {
+  return <td className={cn('px-4 py-3 text-sm', className)} {...props} />;
+}
 
 export interface Column<T> {
   key: string;

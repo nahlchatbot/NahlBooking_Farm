@@ -15,7 +15,7 @@ import { Button } from '../components/ui/Button';
 import { Badge } from '../components/ui/Badge';
 import { Tabs } from '../components/ui/Tabs';
 import { Skeleton } from '../components/ui/Skeleton';
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '../components/ui/Table';
+import { TableRoot as Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '../components/ui/Table';
 import clsx from 'clsx';
 
 // Date presets
