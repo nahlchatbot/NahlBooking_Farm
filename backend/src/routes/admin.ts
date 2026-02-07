@@ -31,6 +31,7 @@ import {
   getBookingHandler,
   updateBookingHandler,
   cancelBookingHandler,
+  sendReminderHandler,
 } from '../controllers/admin/bookings.controller.js';
 import {
   listBlackoutDatesHandler,
@@ -96,6 +97,7 @@ router.get('/bookings', listBookingsHandler);
 router.get('/bookings/:id', getBookingHandler);
 router.patch('/bookings/:id', requireAdmin, validate(updateBookingSchema), updateBookingHandler);
 router.delete('/bookings/:id', requireAdmin, cancelBookingHandler);
+router.post('/bookings/:id/remind', requireAdmin, sendReminderHandler);
 
 // Blackout Dates
 router.get('/blackout-dates', listBlackoutDatesHandler);

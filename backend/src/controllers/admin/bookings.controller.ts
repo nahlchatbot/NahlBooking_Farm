@@ -128,3 +128,35 @@ export async function cancelBookingHandler(
     next(error);
   }
 }
+
+export async function sendReminderHandler(
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> {
+  try {
+    const { id } = req.params;
+
+    const booking = await getBookingById(id);
+
+    if (!booking) {
+      errorResponse(res, 'الحجز غير موجود', 404);
+      return;
+    }
+
+    if (booking.status === 'CANCELLED') {
+      errorResponse(res, 'لا يمكن إرسال تذكير لحجز ملغي', 400);
+      return;
+    }
+
+    const sent = await whatsappService.sendBookingReminder(booking);
+
+    if (sent) {
+      successResponse(res, 'تم إرسال التذكير بنجاح');
+    } else {
+      errorResponse(res, 'فشل في إرسال التذكير. تأكد من تفعيل واتساب.', 500);
+    }
+  } catch (error) {
+    next(error);
+  }
+}

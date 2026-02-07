@@ -212,6 +212,28 @@ class WhatsAppService {
 
     return this.sendMessage(booking.customerPhone, message);
   }
+
+  /**
+   * Send booking reminder (upcoming visit)
+   */
+  async sendBookingReminder(booking: BookingWithChalet): Promise<boolean> {
+    const lang = booking.language || 'ar';
+    const templateKey = `whatsapp_template_reminder_${lang}`;
+    const template = await this.getTemplate(templateKey);
+
+    if (!template) {
+      // Fallback message if no template is configured
+      const message =
+        lang === 'ar'
+          ? `تذكير بحجزك القادم 📅\nمرحباً ${booking.customerName}\nرقم الحجز: ${booking.bookingRef}\nالتاريخ: ${formatDateLocalized(booking.date, lang)}\nالنوع: ${mapEnumToLocalized(booking.visitType, lang)}\nعدد الضيوف: ${booking.guests}\nنتطلع لاستقبالك!`
+          : `Booking Reminder 📅\nHi ${booking.customerName}\nRef: ${booking.bookingRef}\nDate: ${formatDateLocalized(booking.date, lang)}\nType: ${mapEnumToLocalized(booking.visitType, lang)}\nGuests: ${booking.guests}\nWe look forward to welcoming you!`;
+
+      return this.sendMessage(booking.customerPhone, message);
+    }
+
+    const message = this.replaceTemplateVariables(template, booking);
+    return this.sendMessage(booking.customerPhone, message);
+  }
 }
 
 // Export singleton instance

@@ -69,6 +69,10 @@ export const bookingsApi = {
     });
     return res.data;
   },
+  sendReminder: async (id: string) => {
+    const res = await apiClient.post(`/admin/bookings/${id}/remind`);
+    return res.data;
+  },
 };
 
 // Dashboard API

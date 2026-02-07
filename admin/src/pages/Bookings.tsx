@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { bookingsApi, reportsApi } from '../api/client';
-import { ClipboardList, Check, X, Eye, AlertCircle, Download } from 'lucide-react';
+import { ClipboardList, Check, X, Eye, AlertCircle, Download, Bell } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent } from '../components/ui/Card';
 import { Input } from '../components/ui/Input';
 import { Select } from '../components/ui/Select';
@@ -60,6 +60,16 @@ export default function Bookings() {
     onError: () => {
       toast.error(isRTL ? 'فشل في إلغاء الحجز' : 'Failed to cancel booking');
       setCancelTarget(null);
+    },
+  });
+
+  const reminderMutation = useMutation({
+    mutationFn: (id: string) => bookingsApi.sendReminder(id),
+    onSuccess: () => {
+      toast.success(isRTL ? 'تم إرسال التذكير بنجاح' : 'Reminder sent successfully');
+    },
+    onError: () => {
+      toast.error(isRTL ? 'فشل في إرسال التذكير. تأكد من تفعيل واتساب.' : 'Failed to send reminder. Make sure WhatsApp is enabled.');
     },
   });
 
@@ -358,22 +368,35 @@ export default function Bookings() {
                 <div>{selectedBooking.notes as string}</div>
               </div>
             )}
-            {selectedBooking.status === 'PENDING' && (
+            {selectedBooking.status !== 'CANCELLED' && (
               <div className="flex gap-2 pt-4 border-t">
-                <Button onClick={() => confirmMutation.mutate(selectedBooking.id as string)} disabled={confirmMutation.isPending}>
-                  <Check size={16} />
-                  {isRTL ? 'تأكيد الحجز' : 'Confirm Booking'}
-                </Button>
+                {selectedBooking.status === 'PENDING' && (
+                  <Button onClick={() => confirmMutation.mutate(selectedBooking.id as string)} disabled={confirmMutation.isPending}>
+                    <Check size={16} />
+                    {isRTL ? 'تأكيد الحجز' : 'Confirm Booking'}
+                  </Button>
+                )}
                 <Button
-                  variant="danger"
-                  onClick={() => {
-                    setCancelTarget(selectedBooking.id as string);
-                  }}
-                  disabled={cancelMutation.isPending}
+                  variant="secondary"
+                  onClick={() => reminderMutation.mutate(selectedBooking.id as string)}
+                  disabled={reminderMutation.isPending}
+                  loading={reminderMutation.isPending}
                 >
-                  <X size={16} />
-                  {isRTL ? 'إلغاء الحجز' : 'Cancel Booking'}
+                  <Bell size={16} />
+                  {isRTL ? 'إرسال تذكير' : 'Send Reminder'}
                 </Button>
+                {selectedBooking.status === 'PENDING' && (
+                  <Button
+                    variant="danger"
+                    onClick={() => {
+                      setCancelTarget(selectedBooking.id as string);
+                    }}
+                    disabled={cancelMutation.isPending}
+                  >
+                    <X size={16} />
+                    {isRTL ? 'إلغاء الحجز' : 'Cancel Booking'}
+                  </Button>
+                )}
               </div>
             )}
           </div>

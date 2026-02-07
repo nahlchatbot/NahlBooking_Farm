@@ -368,6 +368,46 @@ export default function Settings() {
                 </div>
               </div>
             </div>
+
+            {/* Reminder Template */}
+            <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-xl">
+              <h4 className="text-sm font-semibold text-yellow-800 mb-1 flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-yellow-500" />
+                {isRTL ? 'رسالة تذكير بالحجز' : 'Booking Reminder Message'}
+              </h4>
+              <p className="text-xs text-yellow-700 mb-3">
+                {isRTL ? 'تُرسل يدوياً عند الضغط على "إرسال تذكير" في صفحة الحجوزات' : 'Sent manually when you click "Send Reminder" on the Bookings page'}
+              </p>
+              <div className="space-y-3">
+                <div>
+                  <label className="block text-xs font-medium text-gray-600 mb-1">
+                    {isRTL ? 'النسخة العربية' : 'Arabic version'}
+                  </label>
+                  <textarea
+                    value={formData.whatsapp_template_reminder_ar || ''}
+                    onChange={(e) => handleChange('whatsapp_template_reminder_ar', e.target.value)}
+                    rows={4}
+                    placeholder={isRTL
+                      ? 'مثال: تذكير بحجزك القادم 📅\nمرحباً {customerName}\nرقم الحجز: {bookingRef}\nالتاريخ: {date}\nالنوع: {visitType}\nنتطلع لاستقبالك!'
+                      : 'Example: تذكير بحجزك القادم 📅...'}
+                    className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent hover:border-gray-400 transition-all text-sm bg-white"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-600 mb-1">
+                    {isRTL ? 'النسخة الإنجليزية' : 'English version'}
+                  </label>
+                  <textarea
+                    value={formData.whatsapp_template_reminder_en || ''}
+                    onChange={(e) => handleChange('whatsapp_template_reminder_en', e.target.value)}
+                    rows={4}
+                    dir="ltr"
+                    placeholder="Example: Booking Reminder 📅&#10;Hi {customerName}&#10;Ref: {bookingRef}&#10;Date: {date}&#10;Type: {visitType}&#10;We look forward to welcoming you!"
+                    className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent hover:border-gray-400 transition-all text-sm bg-white"
+                  />
+                </div>
+              </div>
+            </div>
           </div>
         </CardContent>
       </Card>
