@@ -2,9 +2,23 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { blackoutApi } from '../api/client';
-import { Plus, Trash2, AlertCircle } from 'lucide-react';
+import { CalendarX, Plus, Trash2, AlertCircle } from 'lucide-react';
+import { Card, CardHeader, CardTitle, CardContent } from '../components/ui/Card';
+import { Input } from '../components/ui/Input';
+import { Select } from '../components/ui/Select';
 import { Button } from '../components/ui/Button';
+import { Badge } from '../components/ui/Badge';
+import { SkeletonCard } from '../components/ui/Skeleton';
+import { EmptyState } from '../components/ui/EmptyState';
+import { ConfirmDialog } from '../components/ui/ConfirmDialog';
 import toast from 'react-hot-toast';
+
+interface BlackoutDate {
+  id: string;
+  date: string;
+  visitType?: string | null;
+  reason?: string | null;
+}
 
 export default function BlackoutDates() {
   const { t, i18n } = useTranslation();
@@ -14,6 +28,7 @@ export default function BlackoutDates() {
   const [newDate, setNewDate] = useState('');
   const [newType, setNewType] = useState('');
   const [newReason, setNewReason] = useState('');
+  const [deleteTarget, setDeleteTarget] = useState<BlackoutDate | null>(null);
 
   const { data, isLoading, error } = useQuery({
     queryKey: ['blackout-dates'],
@@ -24,13 +39,13 @@ export default function BlackoutDates() {
     mutationFn: blackoutApi.create,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['blackout-dates'] });
-      toast.success(isRTL ? 'تم إضافة التاريخ المحجوب' : 'Blackout date added');
+      toast.success(isRTL ? 'تم إضافة التاريخ المحجوب بنجاح' : 'Blackout date added successfully');
       setNewDate('');
       setNewType('');
       setNewReason('');
     },
     onError: () => {
-      toast.error(isRTL ? 'فشل في إضافة التاريخ' : 'Failed to add date');
+      toast.error(isRTL ? 'فشل في إضافة التاريخ' : 'Failed to add blackout date');
     },
   });
 
@@ -39,9 +54,11 @@ export default function BlackoutDates() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['blackout-dates'] });
       toast.success(isRTL ? 'تم إزالة التاريخ المحجوب' : 'Blackout date removed');
+      setDeleteTarget(null);
     },
     onError: () => {
-      toast.error(isRTL ? 'فشل في إزالة التاريخ' : 'Failed to remove date');
+      toast.error(isRTL ? 'فشل في إزالة التاريخ' : 'Failed to remove blackout date');
+      setDeleteTarget(null);
     },
   });
 
@@ -54,121 +71,203 @@ export default function BlackoutDates() {
     });
   };
 
-  const blackoutDates = data?.data || [];
+  const handleDeleteConfirm = () => {
+    if (deleteTarget) {
+      deleteMutation.mutate(deleteTarget.id);
+    }
+  };
+
+  const blackoutDates: BlackoutDate[] = data?.data || [];
+
+  const visitTypeOptions = [
+    { value: '', label: isRTL ? 'الكل (نهاري + مبيت)' : 'All (Day + Overnight)' },
+    { value: 'DAY_VISIT', label: t('bookings.dayVisit') },
+    { value: 'OVERNIGHT_STAY', label: t('bookings.overnightStay') },
+  ];
+
+  const getVisitTypeBadge = (visitType?: string | null) => {
+    if (visitType === 'DAY_VISIT') {
+      return <Badge variant="info">{t('bookings.dayVisit')}</Badge>;
+    }
+    if (visitType === 'OVERNIGHT_STAY') {
+      return <Badge variant="primary">{t('bookings.overnightStay')}</Badge>;
+    }
+    return <Badge variant="warning">{isRTL ? 'الكل' : 'All Types'}</Badge>;
+  };
+
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        <div className="h-10 w-48 bg-gray-200 rounded animate-pulse" />
+        <SkeletonCard className="h-48" />
+        <SkeletonCard className="h-64" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-gray-800">{t('blackout.title')}</h1>
-
-      {/* Add new date */}
-      <div className="bg-white rounded-xl shadow-sm p-6">
-        <h2 className="font-semibold mb-4 flex items-center gap-2">
-          <Plus size={20} />
-          {t('blackout.addDate')}
-        </h2>
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <input
-            type="date"
-            value={newDate}
-            onChange={(e) => setNewDate(e.target.value)}
-            className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"
-          />
-          <select
-            value={newType}
-            onChange={(e) => setNewType(e.target.value)}
-            className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"
-          >
-            <option value="">{t('blackout.both')}</option>
-            <option value="DAY_VISIT">{t('bookings.dayVisit')}</option>
-            <option value="OVERNIGHT_STAY">{t('bookings.overnightStay')}</option>
-          </select>
-          <input
-            type="text"
-            value={newReason}
-            onChange={(e) => setNewReason(e.target.value)}
-            placeholder={t('blackout.reason')}
-            className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"
-          />
-          <button
-            onClick={handleAdd}
-            disabled={!newDate || createMutation.isPending}
-            className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors disabled:opacity-50"
-          >
-            {t('blackout.addDate')}
-          </button>
+      {/* Page Header */}
+      <div className="flex items-center gap-3">
+        <div className="p-2 bg-red-100 rounded-lg">
+          <CalendarX className="text-red-600" size={24} />
+        </div>
+        <div>
+          <h1 className="text-2xl font-bold text-gray-800">
+            {isRTL ? 'التواريخ المحجوبة' : 'Blackout Dates'}
+          </h1>
+          <p className="text-sm text-gray-500">
+            {isRTL ? 'حجب تواريخ عندما يكون المنتجع غير متاح للحجز' : 'Block dates when the resort is unavailable for booking'}
+          </p>
         </div>
       </div>
+
+      {/* Add New Date Form */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Plus size={20} className="text-green-500" />
+            {isRTL ? 'إضافة تاريخ محجوب' : 'Add Blackout Date'}
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
+            <Input
+              label={isRTL ? 'التاريخ' : 'Date'}
+              type="date"
+              value={newDate}
+              onChange={(e) => setNewDate(e.target.value)}
+              hint={isRTL ? 'اختر التاريخ الذي تريد حجبه' : 'Select the date to block'}
+            />
+            <Select
+              label={isRTL ? 'نوع الحجز' : 'Visit Type'}
+              value={newType}
+              onChange={(e) => setNewType(e.target.value)}
+              options={visitTypeOptions}
+              hint={isRTL ? 'أي نوع حجوزات تريد حجبه في هذا التاريخ' : 'Which booking types to block on this date'}
+            />
+            <Input
+              label={isRTL ? 'السبب' : 'Reason'}
+              value={newReason}
+              onChange={(e) => setNewReason(e.target.value)}
+              placeholder={isRTL ? 'مثال: صيانة، حدث خاص' : 'e.g. Maintenance, Private event'}
+              hint={isRTL ? 'ملاحظة اختيارية لفريقك' : 'Optional note for your team'}
+            />
+            <Button
+              onClick={handleAdd}
+              disabled={!newDate || createMutation.isPending}
+              loading={createMutation.isPending}
+            >
+              <Plus size={18} />
+              {isRTL ? 'إضافة' : 'Add Date'}
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Error State */}
       {error && (
         <div className="bg-red-50 border border-red-200 rounded-xl p-6 text-center">
           <AlertCircle className="w-8 h-8 text-red-500 mx-auto mb-2" />
-          <p className="text-red-600 mb-3">{isRTL ? 'فشل في تحميل التواريخ' : 'Failed to load dates'}</p>
+          <p className="text-red-600 mb-3">{isRTL ? 'فشل في تحميل التواريخ المحجوبة' : 'Failed to load blackout dates'}</p>
           <Button variant="secondary" size="sm" onClick={() => queryClient.invalidateQueries({ queryKey: ['blackout-dates'] })}>
             {isRTL ? 'إعادة المحاولة' : 'Retry'}
           </Button>
         </div>
       )}
 
-      {/* List */}
+      {/* Blackout Dates List */}
       {!error && (
-        <div className="bg-white rounded-xl shadow-sm overflow-hidden">
-          {isLoading ? (
-            <div className="p-8 text-center text-gray-500">{t('common.loading')}</div>
-          ) : blackoutDates.length === 0 ? (
-            <div className="p-8 text-center text-gray-500">{t('common.noData')}</div>
-          ) : (
-            <table className="w-full">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="text-start py-3 px-4 font-medium text-gray-500">
-                    {t('blackout.date')}
-                  </th>
-                  <th className="text-start py-3 px-4 font-medium text-gray-500">
-                    {t('blackout.type')}
-                  </th>
-                  <th className="text-start py-3 px-4 font-medium text-gray-500">
-                    {t('blackout.reason')}
-                  </th>
-                  <th className="text-start py-3 px-4 font-medium text-gray-500">
-                    {t('bookings.actions')}
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {blackoutDates.map((item: Record<string, unknown>) => (
-                  <tr key={item.id as string} className="border-t">
-                    <td className="py-3 px-4">
-                      {new Date(item.date as string).toLocaleDateString(
-                        isRTL ? 'ar-SA' : 'en-US'
-                      )}
-                    </td>
-                    <td className="py-3 px-4">
-                      {item.visitType === 'DAY_VISIT'
-                        ? t('bookings.dayVisit')
-                        : item.visitType === 'OVERNIGHT_STAY'
-                        ? t('bookings.overnightStay')
-                        : t('blackout.both')}
-                    </td>
-                    <td className="py-3 px-4 text-gray-500">
-                      {(item.reason as string) || '-'}
-                    </td>
-                    <td className="py-3 px-4">
-                      <button
-                        onClick={() => deleteMutation.mutate(item.id as string)}
-                        className="p-1 text-red-600 hover:bg-red-50 rounded"
-                        title={t('blackout.removeDate')}
-                      >
-                        <Trash2 size={18} />
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
-        </div>
+        <Card>
+          <CardHeader>
+            <CardTitle>
+              {isRTL ? 'التواريخ المحجوبة الحالية' : 'Current Blackout Dates'}
+              {blackoutDates.length > 0 && (
+                <Badge variant="default" className="ms-2">{blackoutDates.length}</Badge>
+              )}
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-0">
+            {blackoutDates.length === 0 ? (
+              <EmptyState
+                icon="calendar"
+                title={isRTL ? 'لا توجد تواريخ محجوبة' : 'No Blackout Dates'}
+                description={isRTL ? 'جميع التواريخ متاحة للحجز حالياً. استخدم النموذج أعلاه لحجب تاريخ.' : 'All dates are currently available for booking. Use the form above to block a date.'}
+              />
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr className="border-b bg-gray-50">
+                      <th className="text-start py-3 px-4 text-xs font-semibold text-gray-500 uppercase">
+                        {isRTL ? 'التاريخ' : 'Date'}
+                      </th>
+                      <th className="text-start py-3 px-4 text-xs font-semibold text-gray-500 uppercase">
+                        {isRTL ? 'نوع الحجز' : 'Visit Type'}
+                      </th>
+                      <th className="text-start py-3 px-4 text-xs font-semibold text-gray-500 uppercase">
+                        {isRTL ? 'السبب' : 'Reason'}
+                      </th>
+                      <th className="text-start py-3 px-4 text-xs font-semibold text-gray-500 uppercase">
+                        {isRTL ? 'الإجراءات' : 'Actions'}
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y">
+                    {blackoutDates.map((item) => (
+                      <tr key={item.id} className="hover:bg-gray-50 transition-colors">
+                        <td className="py-3 px-4 text-sm font-medium text-gray-900">
+                          {new Date(item.date).toLocaleDateString(
+                            isRTL ? 'ar-SA' : 'en-US',
+                            { year: 'numeric', month: 'long', day: 'numeric' }
+                          )}
+                        </td>
+                        <td className="py-3 px-4">
+                          {getVisitTypeBadge(item.visitType)}
+                        </td>
+                        <td className="py-3 px-4 text-sm text-gray-500">
+                          {item.reason || (
+                            <span className="text-gray-300 italic">
+                              {isRTL ? 'بدون سبب' : 'No reason'}
+                            </span>
+                          )}
+                        </td>
+                        <td className="py-3 px-4">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => setDeleteTarget(item)}
+                            className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                          >
+                            <Trash2 size={16} />
+                          </Button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </CardContent>
+        </Card>
       )}
+
+      {/* Delete Confirmation Dialog */}
+      <ConfirmDialog
+        open={!!deleteTarget}
+        onClose={() => setDeleteTarget(null)}
+        onConfirm={handleDeleteConfirm}
+        title={isRTL ? 'إزالة التاريخ المحجوب؟' : 'Remove Blackout Date?'}
+        description={
+          isRTL
+            ? 'سيتم فتح الحجوزات لهذا التاريخ مرة أخرى. هل أنت متأكد؟'
+            : 'Bookings will become available again for this date. Are you sure?'
+        }
+        confirmLabel={isRTL ? 'إزالة' : 'Remove'}
+        cancelLabel={isRTL ? 'إلغاء' : 'Cancel'}
+        variant="danger"
+        loading={deleteMutation.isPending}
+      />
     </div>
   );
 }

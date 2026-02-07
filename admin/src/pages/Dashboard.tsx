@@ -13,6 +13,8 @@ import {
   Plus,
   CalendarCheck,
   CalendarX,
+  AlertCircle,
+  RefreshCw,
 } from 'lucide-react';
 import {
   BarChart,
@@ -90,7 +92,7 @@ export default function Dashboard() {
   const navigate = useNavigate();
   const isRTL = i18n.language === 'ar';
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, error } = useQuery({
     queryKey: ['dashboard-stats'],
     queryFn: dashboardApi.stats,
     refetchInterval: 60000, // Refresh every minute
@@ -140,6 +142,31 @@ export default function Dashboard() {
           <SkeletonCard className="h-80" />
           <SkeletonCard className="h-80" />
         </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex flex-col items-center justify-center py-20">
+        <div className="p-4 bg-red-100 rounded-full mb-4">
+          <AlertCircle className="h-10 w-10 text-red-500" />
+        </div>
+        <h2 className="text-xl font-semibold text-gray-900 mb-2">
+          {isRTL ? 'فشل في تحميل لوحة التحكم' : 'Failed to Load Dashboard'}
+        </h2>
+        <p className="text-gray-500 mb-6 text-center max-w-md">
+          {isRTL
+            ? 'حدث خطأ أثناء تحميل البيانات. يرجى المحاولة مرة أخرى.'
+            : 'An error occurred while loading data. Please try again.'}
+        </p>
+        <Button
+          onClick={() => window.location.reload()}
+          className="flex items-center gap-2"
+        >
+          <RefreshCw className="h-4 w-4" />
+          {isRTL ? 'إعادة المحاولة' : 'Try Again'}
+        </Button>
       </div>
     );
   }

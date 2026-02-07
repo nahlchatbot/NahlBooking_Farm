@@ -6,6 +6,7 @@ import {
   updateBookingStatus,
   adminCancelBooking,
 } from '../../services/booking.service.js';
+import { whatsappService } from '../../services/whatsapp.service.js';
 import { successResponse, errorResponse } from '../../utils/response.js';
 import { parseDate } from '../../utils/date.js';
 
@@ -94,7 +95,10 @@ export async function updateBookingHandler(
 
     successResponse(res, 'تم تحديث الحجز', booking);
 
-    // TODO: Send WhatsApp notification if status changed to CONFIRMED
+    // Send WhatsApp notification if status changed to CONFIRMED
+    if (updates.status === 'CONFIRMED') {
+      whatsappService.sendBookingApproved(booking).catch(() => {});
+    }
   } catch (error) {
     next(error);
   }
@@ -118,7 +122,8 @@ export async function cancelBookingHandler(
 
     successResponse(res, 'تم إلغاء الحجز', booking);
 
-    // TODO: Send WhatsApp notification
+    // Send WhatsApp cancellation notification
+    whatsappService.sendBookingCancelled(booking, reason).catch(() => {});
   } catch (error) {
     next(error);
   }

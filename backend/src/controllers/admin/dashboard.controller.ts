@@ -102,7 +102,7 @@ export async function getDashboardStatsHandler(
     });
 
     // Get deposit amount from pricing
-    const depositAmount = pricing[0]?.depositAmount || 700;
+    const depositAmount = pricing[0]?.depositAmount ?? 0;
     const estimatedRevenue = paidBookings * depositAmount;
 
     // Weekly booking trend (last 7 days)

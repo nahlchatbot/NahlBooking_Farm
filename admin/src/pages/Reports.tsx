@@ -2,21 +2,34 @@ import { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import {
-  ChartBarIcon,
-  DocumentArrowDownIcon,
-  CalendarIcon,
-  CurrencyDollarIcon,
-  UserGroupIcon,
-  ChartPieIcon,
-} from '@heroicons/react/24/outline';
+  BarChart as BarChartIcon,
+  Download,
+  Calendar,
+  DollarSign,
+  Users,
+  PieChart as PieChartIcon,
+  TrendingUp,
+  UserCheck,
+  UserPlus,
+  Percent,
+} from 'lucide-react';
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+} from 'recharts';
 import { reportsApi } from '../api/client';
 import { Card, CardHeader, CardTitle, CardContent } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { Badge } from '../components/ui/Badge';
+import { Input } from '../components/ui/Input';
 import { SimpleTabs } from '../components/ui/Tabs';
-import { Skeleton } from '../components/ui/Skeleton';
+import { SkeletonCard } from '../components/ui/Skeleton';
 import { TableRoot as Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '../components/ui/Table';
-import clsx from 'clsx';
 
 // Date presets
 const getPresetDates = () => {
@@ -36,7 +49,7 @@ const getPresetDates = () => {
 };
 
 export default function Reports() {
-  const { t, i18n } = useTranslation();
+  const { i18n } = useTranslation();
   const isRTL = i18n.language === 'ar';
 
   const [activeTab, setActiveTab] = useState('bookings');
@@ -45,10 +58,10 @@ export default function Reports() {
   const [preset, setPreset] = useState('thisMonth');
 
   const tabs = [
-    { id: 'bookings', label: isRTL ? 'الحجوزات' : 'Bookings', icon: CalendarIcon },
-    { id: 'revenue', label: isRTL ? 'الإيرادات' : 'Revenue', icon: CurrencyDollarIcon },
-    { id: 'occupancy', label: isRTL ? 'الإشغال' : 'Occupancy', icon: ChartPieIcon },
-    { id: 'customers', label: isRTL ? 'العملاء' : 'Customers', icon: UserGroupIcon },
+    { id: 'bookings', label: isRTL ? 'الحجوزات' : 'Bookings', icon: Calendar },
+    { id: 'revenue', label: isRTL ? 'الإيرادات' : 'Revenue', icon: DollarSign },
+    { id: 'occupancy', label: isRTL ? 'الإشغال' : 'Occupancy', icon: PieChartIcon },
+    { id: 'customers', label: isRTL ? 'العملاء' : 'Customers', icon: Users },
   ];
 
   const handlePresetChange = (presetKey: string) => {
@@ -57,16 +70,18 @@ export default function Reports() {
   };
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div className="flex items-center gap-3">
+        <div className="p-2 bg-indigo-100 rounded-lg">
+          <BarChartIcon className="text-indigo-600" size={24} />
+        </div>
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
-            <ChartBarIcon className="w-7 h-7 text-primary-600" />
-            {isRTL ? 'التقارير' : 'Reports'}
+          <h1 className="text-2xl font-bold text-gray-800">
+            {isRTL ? 'التقارير والتحليلات' : 'Reports & Analytics'}
           </h1>
-          <p className="text-gray-500 mt-1">
-            {isRTL ? 'تحليل البيانات والإحصائيات' : 'Data analysis and statistics'}
+          <p className="text-sm text-gray-500">
+            {isRTL ? 'تحليل البيانات والإحصائيات لأداء المنتجع' : 'Analyze resort performance data and statistics'}
           </p>
         </div>
       </div>
@@ -106,24 +121,24 @@ export default function Reports() {
               </Button>
             </div>
             <div className="flex items-center gap-2">
-              <input
+              <Input
                 type="date"
                 value={dateRange.startDate}
                 onChange={(e) => {
                   setPreset('custom');
                   setDateRange(prev => ({ ...prev, startDate: e.target.value }));
                 }}
-                className="px-3 py-1.5 border rounded-lg text-sm"
+                className="!py-1.5 text-sm"
               />
-              <span className="text-gray-500">{isRTL ? 'إلى' : 'to'}</span>
-              <input
+              <span className="text-gray-500 text-sm">{isRTL ? 'إلى' : 'to'}</span>
+              <Input
                 type="date"
                 value={dateRange.endDate}
                 onChange={(e) => {
                   setPreset('custom');
                   setDateRange(prev => ({ ...prev, endDate: e.target.value }));
                 }}
-                className="px-3 py-1.5 border rounded-lg text-sm"
+                className="!py-1.5 text-sm"
               />
             </div>
           </div>
@@ -143,6 +158,37 @@ export default function Reports() {
       {activeTab === 'occupancy' && <OccupancyReport dateRange={dateRange} />}
       {activeTab === 'customers' && <CustomersReport dateRange={dateRange} />}
     </div>
+  );
+}
+
+// Stat Card with Icon
+function StatCard({
+  label,
+  value,
+  icon: Icon,
+  iconBg,
+  iconColor,
+}: {
+  label: string;
+  value: string | number;
+  icon: React.ElementType;
+  iconBg: string;
+  iconColor: string;
+}) {
+  return (
+    <Card>
+      <CardContent className="p-4">
+        <div className="flex items-start justify-between">
+          <div>
+            <p className="text-sm text-gray-500 mb-1">{label}</p>
+            <p className="text-2xl font-bold text-gray-900">{value}</p>
+          </div>
+          <div className={`p-2.5 rounded-xl ${iconBg}`}>
+            <Icon size={20} className={iconColor} />
+          </div>
+        </div>
+      </CardContent>
+    </Card>
   );
 }
 
@@ -173,22 +219,30 @@ function BookingsReport({ dateRange }: { dateRange: { startDate: string; endDate
         <StatCard
           label={isRTL ? 'إجمالي الحجوزات' : 'Total Bookings'}
           value={report?.summary.totalBookings || 0}
-          color="blue"
+          icon={Calendar}
+          iconBg="bg-blue-100"
+          iconColor="text-blue-600"
         />
         <StatCard
           label={isRTL ? 'مؤكد' : 'Confirmed'}
           value={report?.summary.confirmedBookings || 0}
-          color="green"
+          icon={TrendingUp}
+          iconBg="bg-green-100"
+          iconColor="text-green-600"
         />
         <StatCard
           label={isRTL ? 'معلق' : 'Pending'}
           value={report?.summary.pendingBookings || 0}
-          color="yellow"
+          icon={Calendar}
+          iconBg="bg-yellow-100"
+          iconColor="text-yellow-600"
         />
         <StatCard
           label={isRTL ? 'ملغي' : 'Cancelled'}
           value={report?.summary.cancelledBookings || 0}
-          color="red"
+          icon={Calendar}
+          iconBg="bg-red-100"
+          iconColor="text-red-600"
         />
       </div>
 
@@ -198,18 +252,18 @@ function BookingsReport({ dateRange }: { dateRange: { startDate: string; endDate
           <div className="flex items-center justify-between">
             <CardTitle>{isRTL ? 'توزيع نوع الزيارة' : 'Visit Type Distribution'}</CardTitle>
             <Button variant="secondary" size="sm" onClick={handleExport}>
-              <DocumentArrowDownIcon className="w-4 h-4 me-1" />
+              <Download size={16} />
               {isRTL ? 'تصدير CSV' : 'Export CSV'}
             </Button>
           </div>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-2 gap-4">
-            <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg text-center">
+            <div className="p-4 bg-blue-50 rounded-xl text-center">
               <div className="text-3xl font-bold text-blue-600">{report?.summary.dayVisits || 0}</div>
               <div className="text-sm text-gray-600 mt-1">{isRTL ? 'زيارات نهارية' : 'Day Visits'}</div>
             </div>
-            <div className="p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg text-center">
+            <div className="p-4 bg-purple-50 rounded-xl text-center">
               <div className="text-3xl font-bold text-purple-600">{report?.summary.overnightStays || 0}</div>
               <div className="text-sm text-gray-600 mt-1">{isRTL ? 'إقامات ليلية' : 'Overnight Stays'}</div>
             </div>
@@ -237,10 +291,10 @@ function BookingsReport({ dateRange }: { dateRange: { startDate: string; endDate
               <TableBody>
                 {report?.bookings?.slice(0, 20).map((booking: Record<string, unknown>) => (
                   <TableRow key={booking.id as string}>
-                    <TableCell className="font-mono text-sm">{booking.bookingRef as string}</TableCell>
+                    <TableCell className="font-mono text-sm text-primary-600">{booking.bookingRef as string}</TableCell>
                     <TableCell>{new Date(booking.date as string).toLocaleDateString(isRTL ? 'ar-SA' : 'en-US')}</TableCell>
                     <TableCell>
-                      <Badge variant={booking.visitType === 'DAY_VISIT' ? 'info' : 'default'}>
+                      <Badge variant={booking.visitType === 'DAY_VISIT' ? 'info' : 'primary'} size="sm">
                         {booking.visitType === 'DAY_VISIT' ? (isRTL ? 'نهاري' : 'Day') : (isRTL ? 'ليلي' : 'Night')}
                       </Badge>
                     </TableCell>
@@ -249,7 +303,7 @@ function BookingsReport({ dateRange }: { dateRange: { startDate: string; endDate
                       <Badge variant={
                         booking.status === 'CONFIRMED' ? 'success' :
                         booking.status === 'CANCELLED' ? 'danger' : 'warning'
-                      }>
+                      } size="sm">
                         {booking.status === 'CONFIRMED' ? (isRTL ? 'مؤكد' : 'Confirmed') :
                          booking.status === 'CANCELLED' ? (isRTL ? 'ملغي' : 'Cancelled') :
                          (isRTL ? 'معلق' : 'Pending')}
@@ -290,6 +344,7 @@ function RevenueReport({ dateRange }: { dateRange: { startDate: string; endDate:
   }
 
   const report = data?.data;
+  const sar = isRTL ? 'ر.س' : 'SAR';
 
   return (
     <div className="space-y-6">
@@ -297,23 +352,31 @@ function RevenueReport({ dateRange }: { dateRange: { startDate: string; endDate:
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard
           label={isRTL ? 'إجمالي الإيرادات' : 'Total Revenue'}
-          value={`${report?.summary.totalRevenue?.toLocaleString() || 0} ${isRTL ? 'ر.س' : 'SAR'}`}
-          color="green"
+          value={`${report?.summary.totalRevenue?.toLocaleString() || 0} ${sar}`}
+          icon={DollarSign}
+          iconBg="bg-green-100"
+          iconColor="text-green-600"
         />
         <StatCard
           label={isRTL ? 'العربون المحصل' : 'Deposits Collected'}
-          value={`${report?.summary.totalDeposits?.toLocaleString() || 0} ${isRTL ? 'ر.س' : 'SAR'}`}
-          color="blue"
+          value={`${report?.summary.totalDeposits?.toLocaleString() || 0} ${sar}`}
+          icon={TrendingUp}
+          iconBg="bg-blue-100"
+          iconColor="text-blue-600"
         />
         <StatCard
           label={isRTL ? 'المتبقي' : 'Outstanding'}
-          value={`${report?.summary.outstandingBalance?.toLocaleString() || 0} ${isRTL ? 'ر.س' : 'SAR'}`}
-          color="yellow"
+          value={`${report?.summary.outstandingBalance?.toLocaleString() || 0} ${sar}`}
+          icon={DollarSign}
+          iconBg="bg-yellow-100"
+          iconColor="text-yellow-600"
         />
         <StatCard
           label={isRTL ? 'متوسط الحجز' : 'Avg. per Booking'}
-          value={`${report?.summary.averagePerBooking?.toLocaleString() || 0} ${isRTL ? 'ر.س' : 'SAR'}`}
-          color="purple"
+          value={`${report?.summary.averagePerBooking?.toLocaleString() || 0} ${sar}`}
+          icon={DollarSign}
+          iconBg="bg-purple-100"
+          iconColor="text-purple-600"
         />
       </div>
 
@@ -323,55 +386,77 @@ function RevenueReport({ dateRange }: { dateRange: { startDate: string; endDate:
           <div className="flex items-center justify-between">
             <CardTitle>{isRTL ? 'الإيرادات حسب النوع' : 'Revenue by Type'}</CardTitle>
             <Button variant="secondary" size="sm" onClick={handleExport}>
-              <DocumentArrowDownIcon className="w-4 h-4 me-1" />
+              <Download size={16} />
               {isRTL ? 'تصدير CSV' : 'Export CSV'}
             </Button>
           </div>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-2 gap-4">
-            <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+            <div className="p-4 bg-blue-50 rounded-xl">
               <div className="text-sm text-gray-600 mb-1">{isRTL ? 'زيارات نهارية' : 'Day Visits'}</div>
               <div className="text-2xl font-bold text-blue-600">
-                {report?.summary.dayVisitRevenue?.toLocaleString() || 0} {isRTL ? 'ر.س' : 'SAR'}
+                {report?.summary.dayVisitRevenue?.toLocaleString() || 0} {sar}
               </div>
             </div>
-            <div className="p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
+            <div className="p-4 bg-purple-50 rounded-xl">
               <div className="text-sm text-gray-600 mb-1">{isRTL ? 'إقامات ليلية' : 'Overnight Stays'}</div>
               <div className="text-2xl font-bold text-purple-600">
-                {report?.summary.overnightRevenue?.toLocaleString() || 0} {isRTL ? 'ر.س' : 'SAR'}
+                {report?.summary.overnightRevenue?.toLocaleString() || 0} {sar}
               </div>
             </div>
           </div>
         </CardContent>
       </Card>
 
-      {/* Monthly Chart */}
+      {/* Monthly Revenue Chart */}
       <Card>
         <CardHeader>
-          <CardTitle>{isRTL ? 'الإيرادات الشهرية' : 'Monthly Revenue'}</CardTitle>
+          <CardTitle className="flex items-center gap-2">
+            <BarChartIcon size={20} className="text-green-500" />
+            {isRTL ? 'الإيرادات الشهرية' : 'Monthly Revenue'}
+          </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="space-y-4">
-            {report?.chartData?.map((month: { month: string; total: number; count: number }) => (
-              <div key={month.month} className="flex items-center gap-4">
-                <div className="w-24 text-sm text-gray-600">{month.month}</div>
-                <div className="flex-1">
-                  <div className="h-8 bg-gray-100 rounded-lg overflow-hidden">
-                    <div
-                      className="h-full bg-gradient-to-r from-green-500 to-emerald-500 rounded-lg transition-all"
-                      style={{
-                        width: `${Math.min(100, (month.total / (report?.summary.totalRevenue || 1)) * 100 * (report?.chartData?.length || 1))}%`,
-                      }}
-                    />
-                  </div>
-                </div>
-                <div className="w-32 text-end font-medium">
-                  {month.total.toLocaleString()} {isRTL ? 'ر.س' : 'SAR'}
-                </div>
-              </div>
-            ))}
-          </div>
+          {report?.chartData?.length > 0 ? (
+            <div className="h-72">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart
+                  data={report.chartData}
+                  margin={{ top: 10, right: 10, left: 10, bottom: 10 }}
+                >
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                  <XAxis
+                    dataKey="month"
+                    tick={{ fontSize: 12 }}
+                    tickLine={false}
+                    axisLine={false}
+                    reversed={isRTL}
+                  />
+                  <YAxis
+                    tickLine={false}
+                    axisLine={false}
+                    tick={{ fontSize: 12 }}
+                    tickFormatter={(v) => `${v.toLocaleString()}`}
+                  />
+                  <Tooltip
+                    formatter={(value: number) => [`${value.toLocaleString()} ${sar}`, isRTL ? 'الإيرادات' : 'Revenue']}
+                    contentStyle={{
+                      backgroundColor: 'white',
+                      border: '1px solid #e5e7eb',
+                      borderRadius: '8px',
+                      boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
+                    }}
+                  />
+                  <Bar dataKey="total" fill="#22c55e" radius={[6, 6, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          ) : (
+            <div className="text-center py-12 text-gray-500">
+              {isRTL ? 'لا توجد بيانات للفترة المحددة' : 'No data for selected period'}
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>
@@ -394,6 +479,12 @@ function OccupancyReport({ dateRange }: { dateRange: { startDate: string; endDat
 
   const report = data?.data;
 
+  // Prepare chart data for day of week
+  const dayOfWeekChartData = report?.byDayOfWeek?.map((day: { day: string; dayEn: string; count: number }) => ({
+    name: isRTL ? day.day : day.dayEn,
+    count: day.count,
+  })) || [];
+
   return (
     <div className="space-y-6">
       {/* Summary Cards */}
@@ -401,55 +492,88 @@ function OccupancyReport({ dateRange }: { dateRange: { startDate: string; endDat
         <StatCard
           label={isRTL ? 'نسبة الإشغال' : 'Occupancy Rate'}
           value={`${report?.summary.occupancyRate || 0}%`}
-          color="green"
+          icon={Percent}
+          iconBg="bg-green-100"
+          iconColor="text-green-600"
         />
         <StatCard
           label={isRTL ? 'إجمالي الأيام' : 'Total Days'}
           value={report?.summary.totalDays || 0}
-          color="blue"
+          icon={Calendar}
+          iconBg="bg-blue-100"
+          iconColor="text-blue-600"
         />
         <StatCard
           label={isRTL ? 'أيام متاحة' : 'Available Days'}
           value={report?.summary.availableDays || 0}
-          color="gray"
+          icon={Calendar}
+          iconBg="bg-gray-100"
+          iconColor="text-gray-600"
         />
         <StatCard
           label={isRTL ? 'أيام محجوزة' : 'Booked Days'}
           value={report?.summary.bookedDays || 0}
-          color="purple"
+          icon={TrendingUp}
+          iconBg="bg-purple-100"
+          iconColor="text-purple-600"
         />
         <StatCard
           label={isRTL ? 'أيام محجوبة' : 'Blocked Days'}
           value={report?.summary.blackoutDays || 0}
-          color="red"
+          icon={Calendar}
+          iconBg="bg-red-100"
+          iconColor="text-red-600"
         />
       </div>
 
-      {/* Occupancy by Day of Week */}
+      {/* Day of Week Bar Chart */}
       <Card>
         <CardHeader>
-          <CardTitle>{isRTL ? 'الحجوزات حسب يوم الأسبوع' : 'Bookings by Day of Week'}</CardTitle>
+          <CardTitle className="flex items-center gap-2">
+            <BarChartIcon size={20} className="text-primary-500" />
+            {isRTL ? 'الحجوزات حسب يوم الأسبوع' : 'Bookings by Day of Week'}
+          </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-7 gap-2">
-            {report?.byDayOfWeek?.map((day: { day: string; dayEn: string; count: number }) => {
-              const maxCount = Math.max(...(report?.byDayOfWeek?.map((d: { count: number }) => d.count) || [1]));
-              const heightPercent = maxCount > 0 ? (day.count / maxCount) * 100 : 0;
-
-              return (
-                <div key={day.dayEn} className="text-center">
-                  <div className="h-32 flex items-end justify-center mb-2">
-                    <div
-                      className="w-full max-w-[40px] bg-gradient-to-t from-primary-600 to-primary-400 rounded-t-lg transition-all"
-                      style={{ height: `${Math.max(heightPercent, 5)}%` }}
-                    />
-                  </div>
-                  <div className="text-sm font-medium">{day.count}</div>
-                  <div className="text-xs text-gray-500">{isRTL ? day.day : day.dayEn}</div>
-                </div>
-              );
-            })}
-          </div>
+          {dayOfWeekChartData.length > 0 ? (
+            <div className="h-72">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart
+                  data={dayOfWeekChartData}
+                  margin={{ top: 10, right: 10, left: 10, bottom: 10 }}
+                >
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                  <XAxis
+                    dataKey="name"
+                    tick={{ fontSize: 12 }}
+                    tickLine={false}
+                    axisLine={false}
+                    reversed={isRTL}
+                  />
+                  <YAxis
+                    allowDecimals={false}
+                    tickLine={false}
+                    axisLine={false}
+                    tick={{ fontSize: 12 }}
+                  />
+                  <Tooltip
+                    formatter={(value: number) => [value, isRTL ? 'حجوزات' : 'Bookings']}
+                    contentStyle={{
+                      backgroundColor: 'white',
+                      border: '1px solid #e5e7eb',
+                      borderRadius: '8px',
+                      boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
+                    }}
+                  />
+                  <Bar dataKey="count" fill="#6366f1" radius={[6, 6, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          ) : (
+            <div className="text-center py-12 text-gray-500">
+              {isRTL ? 'لا توجد بيانات للفترة المحددة' : 'No data for selected period'}
+            </div>
+          )}
         </CardContent>
       </Card>
 
@@ -501,22 +625,30 @@ function CustomersReport({ dateRange }: { dateRange: { startDate: string; endDat
         <StatCard
           label={isRTL ? 'إجمالي العملاء' : 'Total Customers'}
           value={report?.summary.totalCustomers || 0}
-          color="blue"
+          icon={Users}
+          iconBg="bg-blue-100"
+          iconColor="text-blue-600"
         />
         <StatCard
           label={isRTL ? 'عملاء متكررين' : 'Repeat Customers'}
           value={report?.summary.repeatCustomers || 0}
-          color="green"
+          icon={UserCheck}
+          iconBg="bg-green-100"
+          iconColor="text-green-600"
         />
         <StatCard
           label={isRTL ? 'عملاء جدد' : 'New Customers'}
           value={report?.summary.newCustomers || 0}
-          color="purple"
+          icon={UserPlus}
+          iconBg="bg-purple-100"
+          iconColor="text-purple-600"
         />
         <StatCard
           label={isRTL ? 'معدل التكرار' : 'Repeat Rate'}
           value={`${report?.summary.repeatRate || 0}%`}
-          color="yellow"
+          icon={Percent}
+          iconBg="bg-yellow-100"
+          iconColor="text-yellow-600"
         />
       </div>
 
@@ -546,13 +678,12 @@ function CustomersReport({ dateRange }: { dateRange: { startDate: string; endDat
                 }, index: number) => (
                   <TableRow key={customer.phone}>
                     <TableCell>
-                      <span className={clsx(
-                        'inline-flex items-center justify-center w-6 h-6 rounded-full text-xs font-bold',
+                      <span className={`inline-flex items-center justify-center w-6 h-6 rounded-full text-xs font-bold ${
                         index === 0 ? 'bg-yellow-100 text-yellow-700' :
                         index === 1 ? 'bg-gray-100 text-gray-700' :
                         index === 2 ? 'bg-orange-100 text-orange-700' :
                         'bg-gray-50 text-gray-600'
-                      )}>
+                      }`}>
                         {index + 1}
                       </span>
                     </TableCell>
@@ -575,48 +706,16 @@ function CustomersReport({ dateRange }: { dateRange: { startDate: string; endDat
   );
 }
 
-// Stat Card Component
-function StatCard({ label, value, color }: { label: string; value: string | number; color: string }) {
-  const colorClasses: Record<string, string> = {
-    blue: 'bg-blue-50 dark:bg-blue-900/20 text-blue-600',
-    green: 'bg-green-50 dark:bg-green-900/20 text-green-600',
-    yellow: 'bg-yellow-50 dark:bg-yellow-900/20 text-yellow-600',
-    red: 'bg-red-50 dark:bg-red-900/20 text-red-600',
-    purple: 'bg-purple-50 dark:bg-purple-900/20 text-purple-600',
-    gray: 'bg-gray-50 dark:bg-gray-900/20 text-gray-600',
-  };
-
-  return (
-    <Card>
-      <CardContent className="py-4">
-        <div className="text-sm text-gray-500 mb-1">{label}</div>
-        <div className={clsx('text-2xl font-bold', colorClasses[color] || colorClasses.blue)}>
-          {value}
-        </div>
-      </CardContent>
-    </Card>
-  );
-}
-
 // Loading Skeleton
 function ReportSkeleton() {
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {[1, 2, 3, 4].map(i => (
-          <Card key={i}>
-            <CardContent className="py-4">
-              <Skeleton className="h-4 w-24 mb-2" />
-              <Skeleton className="h-8 w-16" />
-            </CardContent>
-          </Card>
+          <SkeletonCard key={i} className="h-24" />
         ))}
       </div>
-      <Card>
-        <CardContent className="py-8">
-          <Skeleton className="h-48 w-full" />
-        </CardContent>
-      </Card>
+      <SkeletonCard className="h-72" />
     </div>
   );
 }
