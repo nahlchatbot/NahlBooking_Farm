@@ -329,8 +329,13 @@ export default function Calendar() {
           <div className="space-y-4">
             {/* Status */}
             <div className="grid grid-cols-2 gap-4">
-              <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                <div className="text-sm text-gray-500 mb-1">{isRTL ? 'زيارة نهارية' : 'Day Visit'}</div>
+              <div className={clsx(
+                'p-4 rounded-xl border',
+                selectedDate.dayVisit === 'available' ? 'bg-green-50 border-green-200' :
+                selectedDate.dayVisit === 'booked' ? 'bg-blue-50 border-blue-200' :
+                'bg-red-50 border-red-200'
+              )}>
+                <div className="text-sm font-medium text-gray-700 mb-2">{isRTL ? 'زيارة نهارية' : 'Day Visit'}</div>
                 <Badge variant={
                   selectedDate.dayVisit === 'available' ? 'success' :
                   selectedDate.dayVisit === 'booked' ? 'info' : 'danger'
@@ -340,8 +345,13 @@ export default function Calendar() {
                    (isRTL ? 'محجوب' : 'Blocked')}
                 </Badge>
               </div>
-              <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                <div className="text-sm text-gray-500 mb-1">{isRTL ? 'إقامة ليلية' : 'Overnight Stay'}</div>
+              <div className={clsx(
+                'p-4 rounded-xl border',
+                selectedDate.overnight === 'available' ? 'bg-green-50 border-green-200' :
+                selectedDate.overnight === 'booked' ? 'bg-blue-50 border-blue-200' :
+                'bg-red-50 border-red-200'
+              )}>
+                <div className="text-sm font-medium text-gray-700 mb-2">{isRTL ? 'إقامة ليلية' : 'Overnight Stay'}</div>
                 <Badge variant={
                   selectedDate.overnight === 'available' ? 'success' :
                   selectedDate.overnight === 'booked' ? 'info' : 'danger'
