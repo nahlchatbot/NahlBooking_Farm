@@ -3,10 +3,12 @@ import { useTranslation } from 'react-i18next';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { pricingApi } from '../api/client';
 import { DollarSign, Save } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 export default function Pricing() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const queryClient = useQueryClient();
+  const isRTL = i18n.language === 'ar';
 
   const { data, isLoading } = useQuery({
     queryKey: ['pricing'],
@@ -14,10 +16,14 @@ export default function Pricing() {
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }: { id: string; data: any }) =>
+    mutationFn: ({ id, data }: { id: string; data: Record<string, unknown> }) =>
       pricingApi.update(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['pricing'] });
+      toast.success(isRTL ? 'تم تحديث الأسعار' : 'Pricing updated');
+    },
+    onError: () => {
+      toast.error(isRTL ? 'فشل في تحديث الأسعار' : 'Failed to update pricing');
     },
   });
 

@@ -316,6 +316,14 @@ export const calendarApi = {
   },
 };
 
+// Audit Logs API
+export const auditLogsApi = {
+  list: async (params?: Record<string, string>) => {
+    const res = await apiClient.get('/admin/audit-logs', { params });
+    return res.data;
+  },
+};
+
 // Reports API
 export interface ReportDateRange {
   startDate?: string;

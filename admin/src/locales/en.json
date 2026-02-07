@@ -35,6 +35,7 @@
     "blackout": "Blackout Dates",
     "reports": "Reports",
     "users": "Admin Users",
+    "auditLog": "Audit Log",
     "settings": "Settings"
   },
   "dashboard": {

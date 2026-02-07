@@ -2,7 +2,11 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { bookingsApi } from '../api/client';
-import { Check, X, Search, Filter } from 'lucide-react';
+import { Check, X, Search, Filter, Eye, AlertCircle } from 'lucide-react';
+import { Modal } from '../components/ui/Modal';
+import { Badge } from '../components/ui/Badge';
+import { Button } from '../components/ui/Button';
+import toast from 'react-hot-toast';
 
 export default function Bookings() {
   const { t, i18n } = useTranslation();
@@ -12,8 +16,9 @@ export default function Bookings() {
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [page, setPage] = useState(1);
+  const [selectedBooking, setSelectedBooking] = useState<Record<string, unknown> | null>(null);
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, error } = useQuery({
     queryKey: ['bookings', page, search, statusFilter],
     queryFn: () =>
       bookingsApi.list({
@@ -29,6 +34,11 @@ export default function Bookings() {
       bookingsApi.update(id, { status: 'CONFIRMED' }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['bookings'] });
+      toast.success(isRTL ? 'تم تأكيد الحجز' : 'Booking confirmed');
+      setSelectedBooking(null);
+    },
+    onError: () => {
+      toast.error(isRTL ? 'فشل في تأكيد الحجز' : 'Failed to confirm booking');
     },
   });
 
@@ -36,6 +46,11 @@ export default function Bookings() {
     mutationFn: (id: string) => bookingsApi.cancel(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['bookings'] });
+      toast.success(isRTL ? 'تم إلغاء الحجز' : 'Booking cancelled');
+      setSelectedBooking(null);
+    },
+    onError: () => {
+      toast.error(isRTL ? 'فشل في إلغاء الحجز' : 'Failed to cancel booking');
     },
   });
 
@@ -76,121 +91,217 @@ export default function Bookings() {
         </div>
       </div>
 
-      {/* Table */}
-      <div className="bg-white rounded-xl shadow-sm overflow-hidden">
-        {isLoading ? (
-          <div className="p-8 text-center text-gray-500">{t('common.loading')}</div>
-        ) : bookings.length === 0 ? (
-          <div className="p-8 text-center text-gray-500">{t('common.noData')}</div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="text-start py-3 px-4 font-medium text-gray-500">
-                    {t('bookings.ref')}
-                  </th>
-                  <th className="text-start py-3 px-4 font-medium text-gray-500">
-                    {t('bookings.customer')}
-                  </th>
-                  <th className="text-start py-3 px-4 font-medium text-gray-500">
-                    {t('bookings.phone')}
-                  </th>
-                  <th className="text-start py-3 px-4 font-medium text-gray-500">
-                    {t('bookings.date')}
-                  </th>
-                  <th className="text-start py-3 px-4 font-medium text-gray-500">
-                    {t('bookings.visitType')}
-                  </th>
-                  <th className="text-start py-3 px-4 font-medium text-gray-500">
-                    {t('bookings.status')}
-                  </th>
-                  <th className="text-start py-3 px-4 font-medium text-gray-500">
-                    {t('bookings.actions')}
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {bookings.map((booking: any) => (
-                  <tr key={booking.id} className="border-t">
-                    <td className="py-3 px-4 font-mono text-sm">
-                      {booking.bookingRef}
-                    </td>
-                    <td className="py-3 px-4">{booking.customerName}</td>
-                    <td className="py-3 px-4 font-mono text-sm">
-                      {booking.customerPhone}
-                    </td>
-                    <td className="py-3 px-4">
-                      {new Date(booking.date).toLocaleDateString(
-                        isRTL ? 'ar-SA' : 'en-US'
-                      )}
-                    </td>
-                    <td className="py-3 px-4">
-                      {booking.visitType === 'DAY_VISIT'
-                        ? t('bookings.dayVisit')
-                        : t('bookings.overnightStay')}
-                    </td>
-                    <td className="py-3 px-4">
-                      <span
-                        className={`px-2 py-1 text-xs rounded-full ${
-                          booking.status === 'CONFIRMED'
-                            ? 'bg-green-100 text-green-700'
-                            : booking.status === 'CANCELLED'
-                            ? 'bg-red-100 text-red-700'
-                            : 'bg-yellow-100 text-yellow-700'
-                        }`}
-                      >
-                        {t(`bookings.statuses.${booking.status}`)}
-                      </span>
-                    </td>
-                    <td className="py-3 px-4">
-                      {booking.status === 'PENDING' && (
-                        <div className="flex gap-2">
-                          <button
-                            onClick={() => confirmMutation.mutate(booking.id)}
-                            className="p-1 text-green-600 hover:bg-green-50 rounded"
-                            title={t('bookings.confirmBooking')}
-                          >
-                            <Check size={18} />
-                          </button>
-                          <button
-                            onClick={() => cancelMutation.mutate(booking.id)}
-                            className="p-1 text-red-600 hover:bg-red-50 rounded"
-                            title={t('bookings.cancelBooking')}
-                          >
-                            <X size={18} />
-                          </button>
-                        </div>
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
+      {/* Error State */}
+      {error && (
+        <div className="bg-red-50 border border-red-200 rounded-xl p-6 text-center">
+          <AlertCircle className="w-8 h-8 text-red-500 mx-auto mb-2" />
+          <p className="text-red-600 mb-3">{isRTL ? 'فشل في تحميل الحجوزات' : 'Failed to load bookings'}</p>
+          <Button variant="secondary" size="sm" onClick={() => queryClient.invalidateQueries({ queryKey: ['bookings'] })}>
+            {isRTL ? 'إعادة المحاولة' : 'Retry'}
+          </Button>
+        </div>
+      )}
 
-        {/* Pagination */}
-        {pagination && pagination.totalPages > 1 && (
-          <div className="flex justify-center gap-2 p-4 border-t">
-            {Array.from({ length: pagination.totalPages }, (_, i) => i + 1).map(
-              (p) => (
-                <button
-                  key={p}
-                  onClick={() => setPage(p)}
-                  className={`px-3 py-1 rounded ${
-                    p === page
-                      ? 'bg-primary-600 text-white'
-                      : 'bg-gray-100 hover:bg-gray-200'
-                  }`}
-                >
-                  {p}
-                </button>
-              )
+      {/* Table */}
+      {!error && (
+        <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+          {isLoading ? (
+            <div className="p-8 text-center text-gray-500">{t('common.loading')}</div>
+          ) : bookings.length === 0 ? (
+            <div className="p-8 text-center text-gray-500">{t('common.noData')}</div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="text-start py-3 px-4 font-medium text-gray-500">
+                      {t('bookings.ref')}
+                    </th>
+                    <th className="text-start py-3 px-4 font-medium text-gray-500">
+                      {t('bookings.customer')}
+                    </th>
+                    <th className="text-start py-3 px-4 font-medium text-gray-500">
+                      {t('bookings.phone')}
+                    </th>
+                    <th className="text-start py-3 px-4 font-medium text-gray-500">
+                      {t('bookings.date')}
+                    </th>
+                    <th className="text-start py-3 px-4 font-medium text-gray-500">
+                      {t('bookings.visitType')}
+                    </th>
+                    <th className="text-start py-3 px-4 font-medium text-gray-500">
+                      {t('bookings.status')}
+                    </th>
+                    <th className="text-start py-3 px-4 font-medium text-gray-500">
+                      {t('bookings.actions')}
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {bookings.map((booking: Record<string, unknown>) => (
+                    <tr key={booking.id as string} className="border-t hover:bg-gray-50 cursor-pointer" onClick={() => setSelectedBooking(booking)}>
+                      <td className="py-3 px-4 font-mono text-sm">
+                        {booking.bookingRef as string}
+                      </td>
+                      <td className="py-3 px-4">{booking.customerName as string}</td>
+                      <td className="py-3 px-4 font-mono text-sm">
+                        {booking.customerPhone as string}
+                      </td>
+                      <td className="py-3 px-4">
+                        {new Date(booking.date as string).toLocaleDateString(
+                          isRTL ? 'ar-SA' : 'en-US'
+                        )}
+                      </td>
+                      <td className="py-3 px-4">
+                        {booking.visitType === 'DAY_VISIT'
+                          ? t('bookings.dayVisit')
+                          : t('bookings.overnightStay')}
+                      </td>
+                      <td className="py-3 px-4">
+                        <Badge variant={
+                          booking.status === 'CONFIRMED' ? 'success' :
+                          booking.status === 'CANCELLED' ? 'danger' : 'warning'
+                        }>
+                          {t(`bookings.statuses.${booking.status}`)}
+                        </Badge>
+                      </td>
+                      <td className="py-3 px-4">
+                        <div className="flex gap-2" onClick={(e) => e.stopPropagation()}>
+                          <button
+                            onClick={() => setSelectedBooking(booking)}
+                            className="p-1 text-blue-600 hover:bg-blue-50 rounded"
+                            title={t('bookings.viewDetails')}
+                          >
+                            <Eye size={18} />
+                          </button>
+                          {booking.status === 'PENDING' && (
+                            <>
+                              <button
+                                onClick={() => confirmMutation.mutate(booking.id as string)}
+                                className="p-1 text-green-600 hover:bg-green-50 rounded"
+                                title={t('bookings.confirmBooking')}
+                              >
+                                <Check size={18} />
+                              </button>
+                              <button
+                                onClick={() => cancelMutation.mutate(booking.id as string)}
+                                className="p-1 text-red-600 hover:bg-red-50 rounded"
+                                title={t('bookings.cancelBooking')}
+                              >
+                                <X size={18} />
+                              </button>
+                            </>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+
+          {/* Pagination */}
+          {pagination && pagination.totalPages > 1 && (
+            <div className="flex justify-center gap-2 p-4 border-t">
+              {Array.from({ length: pagination.totalPages }, (_, i) => i + 1).map(
+                (p) => (
+                  <button
+                    key={p}
+                    onClick={() => setPage(p)}
+                    className={`px-3 py-1 rounded ${
+                      p === page
+                        ? 'bg-primary-600 text-white'
+                        : 'bg-gray-100 hover:bg-gray-200'
+                    }`}
+                  >
+                    {p}
+                  </button>
+                )
+              )}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Booking Detail Modal */}
+      <Modal
+        open={!!selectedBooking}
+        onClose={() => setSelectedBooking(null)}
+        title={isRTL ? 'تفاصيل الحجز' : 'Booking Details'}
+        size="lg"
+      >
+        {selectedBooking && (
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="p-3 bg-gray-50 rounded-lg">
+                <div className="text-xs text-gray-500 mb-1">{t('bookings.ref')}</div>
+                <div className="font-mono font-medium">{selectedBooking.bookingRef as string}</div>
+              </div>
+              <div className="p-3 bg-gray-50 rounded-lg">
+                <div className="text-xs text-gray-500 mb-1">{t('bookings.status')}</div>
+                <Badge variant={
+                  selectedBooking.status === 'CONFIRMED' ? 'success' :
+                  selectedBooking.status === 'CANCELLED' ? 'danger' : 'warning'
+                }>
+                  {t(`bookings.statuses.${selectedBooking.status}`)}
+                </Badge>
+              </div>
+              <div className="p-3 bg-gray-50 rounded-lg">
+                <div className="text-xs text-gray-500 mb-1">{t('bookings.customer')}</div>
+                <div className="font-medium">{selectedBooking.customerName as string}</div>
+              </div>
+              <div className="p-3 bg-gray-50 rounded-lg">
+                <div className="text-xs text-gray-500 mb-1">{t('bookings.phone')}</div>
+                <div className="font-mono">{selectedBooking.customerPhone as string}</div>
+              </div>
+              <div className="p-3 bg-gray-50 rounded-lg">
+                <div className="text-xs text-gray-500 mb-1">{t('bookings.date')}</div>
+                <div>{new Date(selectedBooking.date as string).toLocaleDateString(isRTL ? 'ar-SA' : 'en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</div>
+              </div>
+              <div className="p-3 bg-gray-50 rounded-lg">
+                <div className="text-xs text-gray-500 mb-1">{t('bookings.visitType')}</div>
+                <div>{selectedBooking.visitType === 'DAY_VISIT' ? t('bookings.dayVisit') : t('bookings.overnightStay')}</div>
+              </div>
+              <div className="p-3 bg-gray-50 rounded-lg">
+                <div className="text-xs text-gray-500 mb-1">{t('bookings.guests')}</div>
+                <div>{selectedBooking.guests as number}</div>
+              </div>
+              <div className="p-3 bg-gray-50 rounded-lg">
+                <div className="text-xs text-gray-500 mb-1">{t('bookings.payment')}</div>
+                <Badge variant={
+                  selectedBooking.paymentStatus === 'FULLY_PAID' ? 'success' :
+                  selectedBooking.paymentStatus === 'DEPOSIT_PAID' ? 'info' : 'warning'
+                }>
+                  {t(`bookings.paymentStatuses.${selectedBooking.paymentStatus}`)}
+                </Badge>
+              </div>
+            </div>
+            {selectedBooking.email && (
+              <div className="p-3 bg-gray-50 rounded-lg">
+                <div className="text-xs text-gray-500 mb-1">Email</div>
+                <div>{selectedBooking.email as string}</div>
+              </div>
+            )}
+            {selectedBooking.notes && (
+              <div className="p-3 bg-gray-50 rounded-lg">
+                <div className="text-xs text-gray-500 mb-1">{isRTL ? 'ملاحظات' : 'Notes'}</div>
+                <div>{selectedBooking.notes as string}</div>
+              </div>
+            )}
+            {selectedBooking.status === 'PENDING' && (
+              <div className="flex gap-2 pt-4 border-t">
+                <Button onClick={() => confirmMutation.mutate(selectedBooking.id as string)} disabled={confirmMutation.isPending}>
+                  {isRTL ? 'تأكيد الحجز' : 'Confirm Booking'}
+                </Button>
+                <Button variant="danger" onClick={() => cancelMutation.mutate(selectedBooking.id as string)} disabled={cancelMutation.isPending}>
+                  {isRTL ? 'إلغاء الحجز' : 'Cancel Booking'}
+                </Button>
+              </div>
             )}
           </div>
         )}
-      </div>
+      </Modal>
     </div>
   );
 }

@@ -189,8 +189,6 @@ export default function Dashboard() {
           title={t('dashboard.weekBookings')}
           value={stats?.overview?.weekBookings || 0}
           icon={Users}
-          trend={12}
-          trendLabel={isRTL ? 'من الأسبوع الماضي' : 'vs last week'}
           iconBg="bg-green-100"
           iconColor="text-green-600"
         />
@@ -198,8 +196,6 @@ export default function Dashboard() {
           title={t('dashboard.revenue')}
           value={`${(stats?.overview?.estimatedRevenue || 0).toLocaleString()} ${t('pricing.sar')}`}
           icon={DollarSign}
-          trend={8}
-          trendLabel={isRTL ? 'من الشهر الماضي' : 'vs last month'}
           iconBg="bg-purple-100"
           iconColor="text-purple-600"
         />
@@ -339,7 +335,7 @@ export default function Dashboard() {
                     <Badge
                       variant={
                         booking.status === 'CONFIRMED' ? 'success' :
-                        booking.status === 'CANCELLED' ? 'error' : 'warning'
+                        booking.status === 'CANCELLED' ? 'danger' : 'warning'
                       }
                     >
                       {t(`bookings.statuses.${booking.status}`)}
@@ -407,7 +403,7 @@ export default function Dashboard() {
                           <Badge
                             variant={
                               booking.status === 'CONFIRMED' ? 'success' :
-                              booking.status === 'CANCELLED' ? 'error' : 'warning'
+                              booking.status === 'CANCELLED' ? 'danger' : 'warning'
                             }
                             size="sm"
                           >

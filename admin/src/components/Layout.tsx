@@ -15,6 +15,7 @@ import {
   X,
   Globe,
   Users,
+  Shield,
 } from 'lucide-react';
 import { useState } from 'react';
 
@@ -34,6 +35,7 @@ const navItems: NavItem[] = [
   { path: '/blackout', icon: CalendarX, label: 'sidebar.blackout' },
   { path: '/reports', icon: BarChart2, label: 'sidebar.reports' },
   { path: '/users', icon: Users, label: 'sidebar.users', requireSuperAdmin: true },
+  { path: '/audit-log', icon: Shield, label: 'sidebar.auditLog', requireSuperAdmin: true },
   { path: '/settings', icon: Settings, label: 'sidebar.settings' },
 ];
 

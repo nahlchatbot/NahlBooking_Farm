@@ -316,7 +316,7 @@ export default function Calendar() {
 
       {/* Date Details Modal */}
       <Modal
-        isOpen={!!selectedDate}
+        open={!!selectedDate}
         onClose={() => setSelectedDate(null)}
         title={selectedDate ? new Date(selectedDate.date).toLocaleDateString(isRTL ? 'ar-SA' : 'en-US', {
           weekday: 'long',
@@ -411,7 +411,7 @@ export default function Calendar() {
 
       {/* Block Dates Modal */}
       <Modal
-        isOpen={showBlockModal}
+        open={showBlockModal}
         onClose={() => setShowBlockModal(false)}
         title={isRTL ? 'حجب تواريخ' : 'Block Dates'}
       >
@@ -433,11 +433,12 @@ export default function Calendar() {
             label={isRTL ? 'نوع الزيارة' : 'Visit Type'}
             value={blockForm.visitType}
             onChange={(e) => setBlockForm(prev => ({ ...prev, visitType: e.target.value }))}
-          >
-            <option value="">{isRTL ? 'كلاهما' : 'Both'}</option>
-            <option value="DAY_VISIT">{isRTL ? 'زيارة نهارية فقط' : 'Day Visit Only'}</option>
-            <option value="OVERNIGHT_STAY">{isRTL ? 'إقامة ليلية فقط' : 'Overnight Only'}</option>
-          </Select>
+            options={[
+              { value: '', label: isRTL ? 'كلاهما' : 'Both' },
+              { value: 'DAY_VISIT', label: isRTL ? 'زيارة نهارية فقط' : 'Day Visit Only' },
+              { value: 'OVERNIGHT_STAY', label: isRTL ? 'إقامة ليلية فقط' : 'Overnight Only' },
+            ]}
+          />
           <Input
             label={isRTL ? 'السبب (اختياري)' : 'Reason (optional)'}
             value={blockForm.reason}

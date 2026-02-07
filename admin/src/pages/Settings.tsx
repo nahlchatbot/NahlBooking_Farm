@@ -3,9 +3,10 @@ import { useTranslation } from 'react-i18next';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { settingsApi } from '../api/client';
 import { Settings as SettingsIcon, Save, MessageSquare } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 export default function Settings() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const queryClient = useQueryClient();
 
   const { data, isLoading } = useQuery({
@@ -13,11 +14,17 @@ export default function Settings() {
     queryFn: settingsApi.list,
   });
 
+  const isRTL = i18n.language === 'ar';
+
   const updateMutation = useMutation({
     mutationFn: (settings: Record<string, unknown>) =>
       settingsApi.bulkUpdate(settings),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['settings'] });
+      toast.success(isRTL ? 'تم حفظ الإعدادات' : 'Settings saved');
+    },
+    onError: () => {
+      toast.error(isRTL ? 'فشل في حفظ الإعدادات' : 'Failed to save settings');
     },
   });
 

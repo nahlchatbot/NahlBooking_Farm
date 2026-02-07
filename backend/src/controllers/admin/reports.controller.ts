@@ -60,8 +60,12 @@ export async function getBookingsReportHandler(
 
     // Get pricing for revenue calculation
     const pricing = await prisma.pricing.findMany();
-    const dayPrice = pricing.find(p => p.visitType === 'DAY_VISIT')?.totalPrice || 1400;
-    const nightPrice = pricing.find(p => p.visitType === 'OVERNIGHT_STAY')?.totalPrice || 1400;
+    const dayPrice = pricing.find(p => p.visitType === 'DAY_VISIT')?.totalPrice ?? 0;
+    const nightPrice = pricing.find(p => p.visitType === 'OVERNIGHT_STAY')?.totalPrice ?? 0;
+
+    if (!pricing.length) {
+      console.warn('No pricing data found - revenue calculations will show 0');
+    }
 
     const estimatedRevenue = (dayVisits * dayPrice) + (overnightStays * nightPrice);
     const confirmedRevenue = bookings
@@ -127,10 +131,10 @@ export async function getRevenueReportHandler(
 
     // Get pricing
     const pricing = await prisma.pricing.findMany();
-    const dayPrice = pricing.find(p => p.visitType === 'DAY_VISIT')?.totalPrice || 1400;
-    const nightPrice = pricing.find(p => p.visitType === 'OVERNIGHT_STAY')?.totalPrice || 1400;
-    const dayDeposit = pricing.find(p => p.visitType === 'DAY_VISIT')?.depositAmount || 700;
-    const nightDeposit = pricing.find(p => p.visitType === 'OVERNIGHT_STAY')?.depositAmount || 700;
+    const dayPrice = pricing.find(p => p.visitType === 'DAY_VISIT')?.totalPrice ?? 0;
+    const nightPrice = pricing.find(p => p.visitType === 'OVERNIGHT_STAY')?.totalPrice ?? 0;
+    const dayDeposit = pricing.find(p => p.visitType === 'DAY_VISIT')?.depositAmount ?? 0;
+    const nightDeposit = pricing.find(p => p.visitType === 'OVERNIGHT_STAY')?.depositAmount ?? 0;
 
     // Group by month for chart
     const monthlyRevenue: Record<string, { total: number; deposits: number; count: number }> = {};
@@ -455,8 +459,8 @@ export async function exportRevenueCsvHandler(
 
     // Get pricing
     const pricing = await prisma.pricing.findMany();
-    const dayPrice = pricing.find(p => p.visitType === 'DAY_VISIT')?.totalPrice || 1400;
-    const nightPrice = pricing.find(p => p.visitType === 'OVERNIGHT_STAY')?.totalPrice || 1400;
+    const dayPrice = pricing.find(p => p.visitType === 'DAY_VISIT')?.totalPrice ?? 0;
+    const nightPrice = pricing.find(p => p.visitType === 'OVERNIGHT_STAY')?.totalPrice ?? 0;
 
     const headers = [
       'رقم الحجز',
