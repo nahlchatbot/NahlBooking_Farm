@@ -257,7 +257,6 @@ export default function Dashboard() {
                     allowDecimals={false}
                     tickLine={false}
                     axisLine={false}
-                    reversed={isRTL}
                   />
                   <Tooltip
                     contentStyle={{
