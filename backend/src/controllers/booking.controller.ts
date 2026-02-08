@@ -115,11 +115,11 @@ export async function createBookingHandler(
   try {
     const input = req.body as CreateBookingInput;
 
-    // Check phone verification
-    if (!isPhoneVerified(input.customerPhone)) {
-      errorResponse(res, 'يرجى التحقق من رقم الجوال أولاً عبر رمز OTP', 400);
-      return;
-    }
+    // Phone OTP verification is disabled until GreenAPI is configured
+    // if (!isPhoneVerified(input.customerPhone)) {
+    //   errorResponse(res, 'يرجى التحقق من رقم الجوال أولاً عبر رمز OTP', 400);
+    //   return;
+    // }
 
     // Validate guest count against chalet capacity
     if (input.chaletType && input.chaletType !== '' && input.chaletType !== 'يتم الاختيار لاحقاً') {
@@ -138,8 +138,8 @@ export async function createBookingHandler(
 
     const booking = await createBooking(input);
 
-    // Clear phone verification after successful booking
-    phoneOtpStore.delete(input.customerPhone);
+    // Clear phone verification after successful booking (disabled until GreenAPI is configured)
+    // phoneOtpStore.delete(input.customerPhone);
 
     res.status(201).json({
       ok: true,

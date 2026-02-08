@@ -772,15 +772,6 @@
         <div>
           <label>رقم الجوال (واتساب)</label>
           <input id="phone" type="tel" placeholder="9665xxxxxxxx" />
-          <div id="otpSection" style="display:none;margin-top:8px;">
-            <div style="display:flex;gap:8px;align-items:center;">
-              <input id="otpCode" type="text" maxlength="6" placeholder="أدخل رمز التحقق" style="flex:1;text-align:center;letter-spacing:4px;font-size:18px;font-weight:bold;" />
-              <button type="button" id="verifyOtpBtn" class="btn btn-primary" style="padding:10px 16px;font-size:13px;white-space:nowrap;">تحقق</button>
-            </div>
-            <small id="otpStatus" style="color:var(--muted);font-size:12px;margin-top:4px;display:block;"></small>
-          </div>
-          <button type="button" id="requestOtpBtn" style="margin-top:8px;padding:8px 16px;border:1px solid var(--green);color:var(--green);background:transparent;border-radius:8px;cursor:pointer;font-size:13px;font-family:inherit;display:none;">إرسال رمز التحقق عبر واتساب</button>
-          <div id="phoneVerified" style="display:none;margin-top:6px;color:var(--ok);font-size:13px;font-weight:600;">✅ تم التحقق من رقم الجوال</div>
         </div>
 
         <div>
@@ -1039,15 +1030,8 @@
   const elPriceDisplay = document.getElementById("priceDisplay");
   const elChaletCapacity = document.getElementById("chaletCapacity");
   const elGuestWarning = document.getElementById("guestWarning");
-  const elOtpSection = document.getElementById("otpSection");
-  const elOtpCode = document.getElementById("otpCode");
-  const elOtpStatus = document.getElementById("otpStatus");
-  const elRequestOtpBtn = document.getElementById("requestOtpBtn");
-  const elVerifyOtpBtn = document.getElementById("verifyOtpBtn");
-  const elPhoneVerified = document.getElementById("phoneVerified");
 
   let chaletsData = [];
-  let phoneVerified = false;
 
   function setStatus(text, state){
     if (!elStatus) return;
@@ -1092,24 +1076,6 @@
       const res = await fetch(`/api/chalets`, { method: "GET" });
       return res.json();
     } catch { return { ok: false, data: [] }; }
-  }
-
-  async function apiRequestOtp(phone){
-    const res = await fetch(`/api/phone/request-otp`, {
-      method: "POST",
-      headers: {"Content-Type":"application/json"},
-      body: JSON.stringify({ phone })
-    });
-    return res.json();
-  }
-
-  async function apiVerifyOtp(phone, code){
-    const res = await fetch(`/api/phone/verify-otp`, {
-      method: "POST",
-      headers: {"Content-Type":"application/json"},
-      body: JSON.stringify({ phone, code })
-    });
-    return res.json();
   }
 
   // =========================
@@ -1206,90 +1172,6 @@
   elVisit?.addEventListener("change", updatePriceDisplay);
 
   // =========================
-  // OTP Phone Verification
-  // =========================
-  function showOtpButton(){
-    const phone = (elPhone?.value || "").trim();
-    if (phone.length >= 10 && !phoneVerified) {
-      if (elRequestOtpBtn) elRequestOtpBtn.style.display = "inline-block";
-    } else {
-      if (elRequestOtpBtn) elRequestOtpBtn.style.display = "none";
-    }
-    // Reset verification if phone changes
-    if (phoneVerified) {
-      phoneVerified = false;
-      if (elPhoneVerified) elPhoneVerified.style.display = "none";
-      if (elOtpSection) elOtpSection.style.display = "none";
-    }
-  }
-
-  elPhone?.addEventListener("input", showOtpButton);
-
-  elRequestOtpBtn?.addEventListener("click", async () => {
-    const phone = (elPhone?.value || "").trim();
-    if (!phone) return;
-    elRequestOtpBtn.disabled = true;
-    elRequestOtpBtn.textContent = "جارٍ الإرسال...";
-    try {
-      const res = await apiRequestOtp(phone);
-      if (res?.ok) {
-        if (elOtpSection) elOtpSection.style.display = "block";
-        if (elRequestOtpBtn) elRequestOtpBtn.style.display = "none";
-        if (elOtpStatus) {
-          elOtpStatus.textContent = "تم إرسال رمز التحقق عبر واتساب";
-          elOtpStatus.style.color = "var(--ok)";
-        }
-      } else {
-        if (elOtpStatus) {
-          elOtpStatus.textContent = res?.message || "فشل إرسال الرمز";
-          elOtpStatus.style.color = "var(--bad)";
-          elOtpSection.style.display = "block";
-        }
-      }
-    } catch {
-      if (elOtpStatus) {
-        elOtpStatus.textContent = "تعذر الاتصال بالخادم";
-        elOtpStatus.style.color = "var(--bad)";
-      }
-    }
-    elRequestOtpBtn.disabled = false;
-    elRequestOtpBtn.textContent = "إرسال رمز التحقق عبر واتساب";
-  });
-
-  elVerifyOtpBtn?.addEventListener("click", async () => {
-    const phone = (elPhone?.value || "").trim();
-    const code = (elOtpCode?.value || "").trim();
-    if (!code || code.length < 4) {
-      if (elOtpStatus) {
-        elOtpStatus.textContent = "يرجى إدخال رمز التحقق";
-        elOtpStatus.style.color = "var(--bad)";
-      }
-      return;
-    }
-    elVerifyOtpBtn.disabled = true;
-    try {
-      const res = await apiVerifyOtp(phone, code);
-      if (res?.ok) {
-        phoneVerified = true;
-        if (elOtpSection) elOtpSection.style.display = "none";
-        if (elPhoneVerified) elPhoneVerified.style.display = "block";
-        if (elRequestOtpBtn) elRequestOtpBtn.style.display = "none";
-      } else {
-        if (elOtpStatus) {
-          elOtpStatus.textContent = res?.message || "رمز التحقق غير صحيح";
-          elOtpStatus.style.color = "var(--bad)";
-        }
-      }
-    } catch {
-      if (elOtpStatus) {
-        elOtpStatus.textContent = "تعذر التحقق";
-        elOtpStatus.style.color = "var(--bad)";
-      }
-    }
-    elVerifyOtpBtn.disabled = false;
-  });
-
-  // =========================
   // Availability Check
   // =========================
   async function checkAvailability(){
@@ -1330,12 +1212,6 @@
   // Submit Booking
   // =========================
   async function submitBooking(){
-    // Validate phone verification
-    if (!phoneVerified) {
-      setStatus("يرجى التحقق من رقم الجوال أولاً عبر رمز الواتساب.", "bad");
-      return;
-    }
-
     // Validate guest count
     if (!validateGuests()) {
       setStatus("عدد الضيوف يتجاوز السعة القصوى للشاليه المختار.", "bad");
@@ -1406,11 +1282,6 @@
     if (elPhone) elPhone.value = "";
     if (elEmail) elEmail.value = "";
     if (elNote) elNote.value = "";
-    if (elOtpCode) elOtpCode.value = "";
-    phoneVerified = false;
-    if (elPhoneVerified) elPhoneVerified.style.display = "none";
-    if (elOtpSection) elOtpSection.style.display = "none";
-    if (elRequestOtpBtn) elRequestOtpBtn.style.display = "none";
     setStatus("", "");
     if (elSubmit) elSubmit.disabled = true;
     checkAvailability();
