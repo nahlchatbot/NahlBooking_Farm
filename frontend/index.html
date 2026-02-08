@@ -1049,7 +1049,6 @@
   function initDefaultDate(){
     if (!elDate) return;
     const today = new Date();
-    elDate.value = toIsoLocal(today);
     elDate.min = toIsoLocal(today);
   }
 
@@ -1089,7 +1088,6 @@
       chaletsData = chalets;
       elChalet.innerHTML = '<option value="">اختر الشاليه</option>';
       chalets.forEach(c => {
-        if (!c.isActive) return;
         const opt = document.createElement("option");
         opt.value = c.id;
         opt.textContent = c.nameAr || c.nameEn;

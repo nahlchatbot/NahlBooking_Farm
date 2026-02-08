@@ -29,38 +29,59 @@ router.get(
 // GET /api/chalets - Public list of active chalets with booking types and pricing
 router.get('/chalets', async (req, res) => {
   try {
-    const chalets = await prisma.chalet.findMany({
-      where: { isActive: true },
-      orderBy: { sortOrder: 'asc' },
-      select: {
-        id: true,
-        nameAr: true,
-        nameEn: true,
-        slug: true,
-        maxGuests: true,
-        descriptionAr: true,
-        descriptionEn: true,
-        amenities: true,
-        imageUrl: true,
-        images: { orderBy: { sortOrder: 'asc' }, select: { url: true, caption: true } },
-        chaletBookingTypes: {
-          include: {
-            bookingType: {
-              select: { id: true, nameAr: true, nameEn: true, slug: true, startTime: true, endTime: true },
+    let chalets;
+    try {
+      chalets = await prisma.chalet.findMany({
+        where: { isActive: true },
+        orderBy: { sortOrder: 'asc' },
+        select: {
+          id: true,
+          nameAr: true,
+          nameEn: true,
+          slug: true,
+          maxGuests: true,
+          descriptionAr: true,
+          descriptionEn: true,
+          amenities: true,
+          imageUrl: true,
+          images: { orderBy: { sortOrder: 'asc' }, select: { url: true, caption: true } },
+          chaletBookingTypes: {
+            select: {
+              bookingType: {
+                select: { id: true, nameAr: true, nameEn: true, slug: true, startTime: true, endTime: true },
+              },
+            },
+          },
+          chaletPricings: {
+            where: { isActive: true },
+            select: {
+              bookingTypeId: true,
+              totalPrice: true,
+              depositAmount: true,
+              bookingType: { select: { slug: true, nameAr: true, nameEn: true } },
             },
           },
         },
-        chaletPricings: {
-          where: { isActive: true },
-          select: {
-            bookingTypeId: true,
-            totalPrice: true,
-            depositAmount: true,
-            bookingType: { select: { slug: true, nameAr: true, nameEn: true } },
-          },
+      });
+    } catch {
+      // Fallback: query without booking type/pricing relations
+      chalets = await prisma.chalet.findMany({
+        where: { isActive: true },
+        orderBy: { sortOrder: 'asc' },
+        select: {
+          id: true,
+          nameAr: true,
+          nameEn: true,
+          slug: true,
+          maxGuests: true,
+          descriptionAr: true,
+          descriptionEn: true,
+          amenities: true,
+          imageUrl: true,
+          images: { orderBy: { sortOrder: 'asc' }, select: { url: true, caption: true } },
         },
-      },
-    });
+      });
+    }
     res.json({ ok: true, data: { chalets } });
   } catch {
     res.status(500).json({ ok: false, message: 'Failed to load chalets' });

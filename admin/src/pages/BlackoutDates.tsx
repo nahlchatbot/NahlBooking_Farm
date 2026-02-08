@@ -46,7 +46,11 @@ export default function BlackoutDates() {
 
   const { data, isLoading, error } = useQuery({
     queryKey: ['blackout-dates', filterChaletId],
-    queryFn: () => blackoutApi.list(filterChaletId ? { chaletId: filterChaletId } : undefined),
+    queryFn: async () => {
+      const res = await blackoutApi.list(filterChaletId ? { chaletId: filterChaletId } : undefined);
+      return res;
+    },
+    retry: 1,
   });
 
   const createMutation = useMutation({
@@ -93,7 +97,8 @@ export default function BlackoutDates() {
     }
   };
 
-  const blackoutDates: BlackoutDate[] = data?.data || [];
+  const rawData = data?.data;
+  const blackoutDates: BlackoutDate[] = Array.isArray(rawData) ? rawData : [];
 
   const visitTypeOptions = [
     { value: '', label: isRTL ? 'الكل (نهاري + مبيت)' : 'All (Day + Overnight)' },

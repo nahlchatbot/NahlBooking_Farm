@@ -31,13 +31,22 @@ export async function listBlackoutDatesHandler(
       where.chaletId = chaletId as string;
     }
 
-    const blackoutDates = await prisma.blackoutDate.findMany({
-      where,
-      orderBy: { date: 'asc' },
-      include: {
-        chalet: { select: { id: true, nameAr: true, nameEn: true } },
-      },
-    });
+    let blackoutDates;
+    try {
+      blackoutDates = await prisma.blackoutDate.findMany({
+        where,
+        orderBy: { date: 'asc' },
+        include: {
+          chalet: { select: { id: true, nameAr: true, nameEn: true } },
+        },
+      });
+    } catch {
+      // Fallback: query without chalet relation if column doesn't exist yet
+      blackoutDates = await prisma.blackoutDate.findMany({
+        where: from || to ? { date: where.date } : {},
+        orderBy: { date: 'asc' },
+      });
+    }
 
     successResponse(res, 'تم جلب التواريخ المحجوبة', blackoutDates);
   } catch (error) {

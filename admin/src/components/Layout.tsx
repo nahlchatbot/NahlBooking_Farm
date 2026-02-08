@@ -1,4 +1,4 @@
-import { Outlet, NavLink, useNavigate } from 'react-router-dom';
+import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '../store/auth';
 import {
@@ -17,8 +17,66 @@ import {
   Users,
   Shield,
   Clock,
+  AlertCircle,
+  RefreshCw,
 } from 'lucide-react';
-import { useState } from 'react';
+import { useState, Component, ErrorInfo, ReactNode } from 'react';
+
+// Error Boundary to catch page-level crashes
+interface ErrorBoundaryProps {
+  children: ReactNode;
+  fallbackKey?: string;
+}
+
+interface ErrorBoundaryState {
+  hasError: boolean;
+  error?: Error;
+}
+
+class PageErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
+  constructor(props: ErrorBoundaryProps) {
+    super(props);
+    this.state = { hasError: false };
+  }
+
+  static getDerivedStateFromError(error: Error): ErrorBoundaryState {
+    return { hasError: true, error };
+  }
+
+  componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+    console.error('Page crash:', error, errorInfo);
+  }
+
+  componentDidUpdate(prevProps: ErrorBoundaryProps) {
+    if (prevProps.fallbackKey !== this.props.fallbackKey) {
+      this.setState({ hasError: false, error: undefined });
+    }
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="flex flex-col items-center justify-center py-20 px-4 text-center">
+          <div className="p-4 bg-red-100 rounded-full mb-4">
+            <AlertCircle className="h-8 w-8 text-red-500" />
+          </div>
+          <h2 className="text-xl font-semibold text-gray-900 mb-2">Something went wrong</h2>
+          <p className="text-sm text-gray-500 mb-4 max-w-md">
+            {this.state.error?.message || 'An unexpected error occurred on this page.'}
+          </p>
+          <button
+            onClick={() => this.setState({ hasError: false, error: undefined })}
+            className="inline-flex items-center gap-2 px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
+          >
+            <RefreshCw className="h-4 w-4" />
+            Try Again
+          </button>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
 
 interface NavItem {
   path: string;
@@ -45,6 +103,7 @@ export default function Layout() {
   const { t, i18n } = useTranslation();
   const { user, logout } = useAuthStore();
   const navigate = useNavigate();
+  const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const handleLogout = () => {
@@ -152,7 +211,9 @@ export default function Layout() {
       {/* Main content */}
       <main className="lg:ms-64 min-h-screen">
         <div className="p-6">
-          <Outlet />
+          <PageErrorBoundary fallbackKey={location.pathname}>
+            <Outlet />
+          </PageErrorBoundary>
         </div>
       </main>
     </div>
