@@ -69,7 +69,7 @@ export default function Chalets() {
     queryFn: () => apiClient.get('/admin/booking-types'),
   });
 
-  const bookingTypes: BookingType[] = bookingTypesData?.data?.data || bookingTypesData?.data || [];
+  const bookingTypes: BookingType[] = bookingTypesData?.data?.data?.bookingTypes || [];
 
   const createMutation = useMutation({
     mutationFn: chaletsApi.create,

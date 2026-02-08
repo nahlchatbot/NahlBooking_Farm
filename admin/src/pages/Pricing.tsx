@@ -91,7 +91,7 @@ export default function Pricing() {
 
   // ── Derived data ─────────────────────────────────────────────────
 
-  const chalets: Chalet[] = chaletsQuery.data?.data?.chalets ?? [];
+  const chalets: Chalet[] = chaletsQuery.data?.data ?? [];
   const bookingTypes: BookingType[] = bookingTypesQuery.data?.data?.bookingTypes ?? [];
   const matrixPricings: MatrixPricing[] = matrixQuery.data?.data?.pricings ?? [];
   const legacyPricing: LegacyPricingItem[] = legacyQuery.data?.data ?? [];
