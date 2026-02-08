@@ -37,6 +37,52 @@ enum AdminRole {
   VIEWER
 }
 
+// Booking Types (Day, Night, Full-Day, etc.)
+model BookingType {
+  id          String   @id @default(uuid())
+  nameAr      String
+  nameEn      String
+  slug        String   @unique
+  startTime   String   // e.g., "08:00"
+  endTime     String   // e.g., "19:00"
+  sortOrder   Int      @default(0)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  chaletBookingTypes ChaletBookingType[]
+  chaletPricings     ChaletPricing[]
+  bookings           Booking[]
+  blackoutDates      BlackoutDate[]
+}
+
+// Junction: which booking types are available per chalet
+model ChaletBookingType {
+  chaletId      String
+  bookingTypeId String
+  chalet        Chalet      @relation(fields: [chaletId], references: [id], onDelete: Cascade)
+  bookingType   BookingType @relation(fields: [bookingTypeId], references: [id], onDelete: Cascade)
+
+  @@id([chaletId, bookingTypeId])
+}
+
+// Pricing per Chalet x BookingType
+model ChaletPricing {
+  id            String      @id @default(uuid())
+  chaletId      String
+  bookingTypeId String
+  totalPrice    Int
+  depositAmount Int
+  isActive      Boolean     @default(true)
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  chalet        Chalet      @relation(fields: [chaletId], references: [id], onDelete: Cascade)
+  bookingType   BookingType @relation(fields: [bookingTypeId], references: [id], onDelete: Cascade)
+
+  @@unique([chaletId, bookingTypeId])
+}
+
 // Chalets
 model Chalet {
   id            String    @id @default(uuid())
@@ -53,8 +99,11 @@ model Chalet {
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
-  bookings      Booking[]
-  images        ChaletImage[]
+  bookings           Booking[]
+  images             ChaletImage[]
+  chaletBookingTypes ChaletBookingType[]
+  chaletPricings     ChaletPricing[]
+  blackoutDates      BlackoutDate[]
 }
 
 // Chalet Images
@@ -87,6 +136,11 @@ model Booking {
   notes              String?
   language           String        @default("ar")
 
+  // Phone verification
+  phoneVerified      Boolean       @default(false)
+  phoneOtpCode       String?
+  phoneOtpExpiresAt  DateTime?
+
   // Status
   status             BookingStatus @default(PENDING)
   paymentStatus      PaymentStatus @default(PENDING)
@@ -103,6 +157,8 @@ model Booking {
   // Relations
   chaletId           String?
   chalet             Chalet?       @relation(fields: [chaletId], references: [id])
+  bookingTypeId      String?
+  bookingType        BookingType?  @relation(fields: [bookingTypeId], references: [id])
 
   // Timestamps
   createdAt          DateTime      @default(now())
@@ -117,18 +173,26 @@ model Booking {
 
 // Blackout Dates
 model BlackoutDate {
-  id          String     @id @default(uuid())
-  date        DateTime   @db.Date
-  visitType   VisitType?
-  reason      String?
-  createdBy   String?
-  createdAt   DateTime   @default(now())
+  id            String       @id @default(uuid())
+  date          DateTime     @db.Date
+  visitType     VisitType?
+  reason        String?
+  createdBy     String?
+  createdAt     DateTime     @default(now())
 
-  @@unique([date, visitType])
+  // Optional: block per chalet (null = all chalets)
+  chaletId      String?
+  chalet        Chalet?      @relation(fields: [chaletId], references: [id], onDelete: Cascade)
+
+  // Optional: block per booking type
+  bookingTypeId String?
+  bookingType   BookingType? @relation(fields: [bookingTypeId], references: [id])
+
+  @@unique([date, visitType, chaletId])
   @@index([date])
 }
 
-// Pricing
+// Pricing (legacy - kept for backward compatibility)
 model Pricing {
   id            String    @id @default(uuid())
   visitType     VisitType @unique
@@ -162,10 +226,10 @@ model AdminUser {
 // Audit Log
 model AuditLog {
   id         String    @id @default(uuid())
-  action     String    // CREATE, UPDATE, DELETE, LOGIN, LOGOUT, etc.
-  entity     String    // Booking, Chalet, Setting, etc.
-  entityId   String?   // ID of the affected entity
-  changes    String?   // JSON string of changes made
+  action     String
+  entity     String
+  entityId   String?
+  changes    String?
   ipAddress  String?
   userAgent  String?
   adminId    String

@@ -16,6 +16,7 @@ import {
   Globe,
   Users,
   Shield,
+  Clock,
 } from 'lucide-react';
 import { useState } from 'react';
 
@@ -31,6 +32,7 @@ const navItems: NavItem[] = [
   { path: '/bookings', icon: ClipboardList, label: 'sidebar.bookings' },
   { path: '/calendar', icon: CalendarDays, label: 'sidebar.calendar' },
   { path: '/chalets', icon: Home, label: 'sidebar.chalets' },
+  { path: '/booking-types', icon: Clock, label: 'sidebar.bookingTypes' },
   { path: '/pricing', icon: DollarSign, label: 'sidebar.pricing' },
   { path: '/blackout', icon: CalendarX, label: 'sidebar.blackout' },
   { path: '/reports', icon: BarChart2, label: 'sidebar.reports' },

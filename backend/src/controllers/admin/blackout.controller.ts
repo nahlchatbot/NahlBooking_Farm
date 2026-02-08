@@ -11,7 +11,7 @@ export async function listBlackoutDatesHandler(
   next: NextFunction
 ): Promise<void> {
   try {
-    const { from, to } = req.query;
+    const { from, to, chaletId } = req.query;
 
     const where: any = {};
 
@@ -27,9 +27,16 @@ export async function listBlackoutDatesHandler(
       }
     }
 
+    if (chaletId) {
+      where.chaletId = chaletId as string;
+    }
+
     const blackoutDates = await prisma.blackoutDate.findMany({
       where,
       orderBy: { date: 'asc' },
+      include: {
+        chalet: { select: { id: true, nameAr: true, nameEn: true } },
+      },
     });
 
     successResponse(res, 'تم جلب التواريخ المحجوبة', blackoutDates);
@@ -58,11 +65,14 @@ export async function createBlackoutDateHandler(
       visitType = mapArabicVisitType(input.visitType);
     }
 
+    const chaletId = (req.body as any).chaletId || null;
+
     // Check if already exists
     const existing = await prisma.blackoutDate.findFirst({
       where: {
         date,
         visitType,
+        chaletId,
       },
     });
 
@@ -77,6 +87,7 @@ export async function createBlackoutDateHandler(
         visitType,
         reason: input.reason,
         createdBy: req.admin?.id,
+        chaletId,
       },
     });
 

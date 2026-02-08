@@ -7,6 +7,7 @@ import Bookings from './pages/Bookings';
 import Calendar from './pages/Calendar';
 import Chalets from './pages/Chalets';
 import Pricing from './pages/Pricing';
+import BookingTypes from './pages/BookingTypes';
 import BlackoutDates from './pages/BlackoutDates';
 import Reports from './pages/Reports';
 import AdminUsers from './pages/AdminUsers';
@@ -38,6 +39,7 @@ function App() {
           <Route path="calendar" element={<Calendar />} />
           <Route path="chalets" element={<Chalets />} />
           <Route path="pricing" element={<Pricing />} />
+          <Route path="booking-types" element={<BookingTypes />} />
           <Route path="blackout" element={<BlackoutDates />} />
           <Route path="reports" element={<Reports />} />
           <Route path="users" element={<AdminUsers />} />

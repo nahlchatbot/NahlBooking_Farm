@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { blackoutApi } from '../api/client';
-import { CalendarX, Plus, Trash2, AlertCircle } from 'lucide-react';
+import { blackoutApi, chaletsApi, Chalet } from '../api/client';
+import { CalendarX, Plus, Trash2, AlertCircle, Home } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent } from '../components/ui/Card';
 import { Input } from '../components/ui/Input';
 import { Select } from '../components/ui/Select';
@@ -18,6 +18,8 @@ interface BlackoutDate {
   date: string;
   visitType?: string | null;
   reason?: string | null;
+  chaletId?: string | null;
+  chalet?: { id: string; nameAr: string; nameEn: string } | null;
 }
 
 export default function BlackoutDates() {
@@ -28,11 +30,23 @@ export default function BlackoutDates() {
   const [newDate, setNewDate] = useState('');
   const [newType, setNewType] = useState('');
   const [newReason, setNewReason] = useState('');
+  const [newChaletId, setNewChaletId] = useState('');
+  const [filterChaletId, setFilterChaletId] = useState('');
   const [deleteTarget, setDeleteTarget] = useState<BlackoutDate | null>(null);
 
+  // Fetch chalets for filter and form
+  const { data: chaletsData } = useQuery({
+    queryKey: ['chalets'],
+    queryFn: async () => {
+      const res = await chaletsApi.list();
+      return (res.data || []) as Chalet[];
+    },
+  });
+  const chalets = chaletsData || [];
+
   const { data, isLoading, error } = useQuery({
-    queryKey: ['blackout-dates'],
-    queryFn: () => blackoutApi.list(),
+    queryKey: ['blackout-dates', filterChaletId],
+    queryFn: () => blackoutApi.list(filterChaletId ? { chaletId: filterChaletId } : undefined),
   });
 
   const createMutation = useMutation({
@@ -43,6 +57,7 @@ export default function BlackoutDates() {
       setNewDate('');
       setNewType('');
       setNewReason('');
+      setNewChaletId('');
     },
     onError: () => {
       toast.error(isRTL ? 'فشل في إضافة التاريخ' : 'Failed to add blackout date');
@@ -68,7 +83,8 @@ export default function BlackoutDates() {
       date: newDate,
       visitType: newType || undefined,
       reason: newReason || undefined,
-    });
+      chaletId: newChaletId || undefined,
+    } as any);
   };
 
   const handleDeleteConfirm = () => {
@@ -122,6 +138,22 @@ export default function BlackoutDates() {
         </div>
       </div>
 
+      {/* Chalet Filter */}
+      <div className="flex items-center gap-3">
+        <Home size={18} className="text-gray-400" />
+        <Select
+          value={filterChaletId}
+          onChange={(e) => setFilterChaletId(e.target.value)}
+          options={[
+            { value: '', label: isRTL ? 'كل الشاليهات' : 'All Chalets' },
+            ...chalets.map((c) => ({
+              value: c.id,
+              label: isRTL ? c.nameAr : c.nameEn,
+            })),
+          ]}
+        />
+      </div>
+
       {/* Add New Date Form */}
       <Card>
         <CardHeader>
@@ -131,13 +163,26 @@ export default function BlackoutDates() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 items-end">
             <Input
               label={isRTL ? 'التاريخ' : 'Date'}
               type="date"
               value={newDate}
               onChange={(e) => setNewDate(e.target.value)}
               hint={isRTL ? 'اختر التاريخ الذي تريد حجبه' : 'Select the date to block'}
+            />
+            <Select
+              label={isRTL ? 'الشاليه' : 'Chalet'}
+              value={newChaletId}
+              onChange={(e) => setNewChaletId(e.target.value)}
+              options={[
+                { value: '', label: isRTL ? 'كل الشاليهات' : 'All Chalets (Global)' },
+                ...chalets.map((c) => ({
+                  value: c.id,
+                  label: isRTL ? c.nameAr : c.nameEn,
+                })),
+              ]}
+              hint={isRTL ? 'حجب شاليه محدد أو الكل' : 'Block a specific chalet or all'}
             />
             <Select
               label={isRTL ? 'نوع الحجز' : 'Visit Type'}
@@ -203,6 +248,9 @@ export default function BlackoutDates() {
                         {isRTL ? 'التاريخ' : 'Date'}
                       </th>
                       <th className="text-start py-3 px-4 text-xs font-semibold text-gray-500 uppercase">
+                        {isRTL ? 'الشاليه' : 'Chalet'}
+                      </th>
+                      <th className="text-start py-3 px-4 text-xs font-semibold text-gray-500 uppercase">
                         {isRTL ? 'نوع الحجز' : 'Visit Type'}
                       </th>
                       <th className="text-start py-3 px-4 text-xs font-semibold text-gray-500 uppercase">
@@ -220,6 +268,17 @@ export default function BlackoutDates() {
                           {new Date(item.date).toLocaleDateString(
                             isRTL ? 'ar-SA' : 'en-US',
                             { year: 'numeric', month: 'long', day: 'numeric' }
+                          )}
+                        </td>
+                        <td className="py-3 px-4 text-sm">
+                          {item.chalet ? (
+                            <Badge variant="primary">
+                              {isRTL ? item.chalet.nameAr : item.chalet.nameEn}
+                            </Badge>
+                          ) : (
+                            <Badge variant="warning">
+                              {isRTL ? 'الكل' : 'All'}
+                            </Badge>
                           )}
                         </td>
                         <td className="py-3 px-4">

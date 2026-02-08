@@ -8,7 +8,7 @@ import {
   XMarkIcon,
   ExclamationTriangleIcon,
 } from '@heroicons/react/24/outline';
-import { calendarApi, CalendarDate, CalendarData } from '../api/client';
+import { calendarApi, chaletsApi, CalendarDate, CalendarData, Chalet } from '../api/client';
 import { Card, CardHeader, CardTitle, CardContent } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { Badge } from '../components/ui/Badge';
@@ -32,20 +32,32 @@ export default function Calendar() {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<CalendarDate | null>(null);
   const [showBlockModal, setShowBlockModal] = useState(false);
+  const [selectedChaletId, setSelectedChaletId] = useState('');
   const [blockForm, setBlockForm] = useState({
     startDate: '',
     endDate: '',
     visitType: '',
     reason: '',
+    chaletId: '',
   });
 
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth() + 1;
 
-  const { data, isLoading, error } = useQuery({
-    queryKey: ['calendar', year, month],
+  // Fetch chalets for filter
+  const { data: chaletsData } = useQuery({
+    queryKey: ['chalets'],
     queryFn: async () => {
-      const res = await calendarApi.get(year, month);
+      const res = await chaletsApi.list();
+      return (res.data || []) as Chalet[];
+    },
+  });
+  const chalets = chaletsData || [];
+
+  const { data, isLoading, error } = useQuery({
+    queryKey: ['calendar', year, month, selectedChaletId],
+    queryFn: async () => {
+      const res = await calendarApi.get(year, month, selectedChaletId || undefined);
       return res.data as CalendarData;
     },
   });
@@ -57,7 +69,7 @@ export default function Calendar() {
       queryClient.invalidateQueries({ queryKey: ['calendar'] });
       toast.success(isRTL ? 'تم حجب التواريخ بنجاح' : 'Dates blocked successfully');
       setShowBlockModal(false);
-      setBlockForm({ startDate: '', endDate: '', visitType: '', reason: '' });
+      setBlockForm({ startDate: '', endDate: '', visitType: '', reason: '', chaletId: '' });
     },
     onError: () => {
       toast.error(isRTL ? 'فشل في حجب التواريخ' : 'Failed to block dates');
@@ -124,6 +136,7 @@ export default function Calendar() {
       endDate: blockForm.endDate || undefined,
       visitType: blockForm.visitType || undefined,
       reason: blockForm.reason || undefined,
+      chaletId: blockForm.chaletId || undefined,
     });
   };
 
@@ -172,9 +185,22 @@ export default function Calendar() {
             {isRTL ? 'عرض وإدارة الحجوزات والتواريخ المحجوبة' : 'View and manage bookings and blocked dates'}
           </p>
         </div>
-        <Button onClick={() => setShowBlockModal(true)}>
-          {isRTL ? 'حجب تواريخ' : 'Block Dates'}
-        </Button>
+        <div className="flex items-center gap-3">
+          <Select
+            value={selectedChaletId}
+            onChange={(e) => setSelectedChaletId(e.target.value)}
+            options={[
+              { value: '', label: isRTL ? 'كل الشاليهات' : 'All Chalets' },
+              ...chalets.map((c) => ({
+                value: c.id,
+                label: isRTL ? c.nameAr : c.nameEn,
+              })),
+            ]}
+          />
+          <Button onClick={() => setShowBlockModal(true)}>
+            {isRTL ? 'حجب تواريخ' : 'Block Dates'}
+          </Button>
+        </div>
       </div>
 
       {/* Summary Cards */}
@@ -447,6 +473,18 @@ export default function Calendar() {
               { value: '', label: isRTL ? 'كلاهما' : 'Both' },
               { value: 'DAY_VISIT', label: isRTL ? 'زيارة نهارية فقط' : 'Day Visit Only' },
               { value: 'OVERNIGHT_STAY', label: isRTL ? 'إقامة ليلية فقط' : 'Overnight Only' },
+            ]}
+          />
+          <Select
+            label={isRTL ? 'الشاليه (اختياري)' : 'Chalet (optional)'}
+            value={blockForm.chaletId}
+            onChange={(e) => setBlockForm(prev => ({ ...prev, chaletId: e.target.value }))}
+            options={[
+              { value: '', label: isRTL ? 'كل الشاليهات' : 'All Chalets (Global)' },
+              ...chalets.map((c) => ({
+                value: c.id,
+                label: isRTL ? c.nameAr : c.nameEn,
+              })),
             ]}
           />
           <Input

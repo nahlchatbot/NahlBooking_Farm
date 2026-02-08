@@ -23,22 +23,24 @@ export async function getCalendarHandler(
   try {
     const year = parseInt(req.query.year as string) || new Date().getFullYear();
     const month = parseInt(req.query.month as string) || new Date().getMonth() + 1;
+    const chaletId = req.query.chaletId as string | undefined;
 
     // Get first and last day of month
     const startDate = new Date(year, month - 1, 1);
     const endDate = new Date(year, month, 0);
 
+    // Build booking filter
+    const bookingWhere: any = {
+      date: { gte: startDate, lte: endDate },
+      status: { in: ['PENDING', 'CONFIRMED'] },
+    };
+    if (chaletId) {
+      bookingWhere.chaletId = chaletId;
+    }
+
     // Fetch bookings for the month
     const bookings = await prisma.booking.findMany({
-      where: {
-        date: {
-          gte: startDate,
-          lte: endDate,
-        },
-        status: {
-          in: ['PENDING', 'CONFIRMED'],
-        },
-      },
+      where: bookingWhere,
       select: {
         id: true,
         bookingRef: true,
@@ -46,18 +48,26 @@ export async function getCalendarHandler(
         visitType: true,
         customerName: true,
         status: true,
+        chaletId: true,
+        chalet: { select: { nameAr: true, nameEn: true } },
       },
       orderBy: { date: 'asc' },
     });
 
+    // Build blackout filter
+    const blackoutWhere: any = {
+      date: { gte: startDate, lte: endDate },
+    };
+    if (chaletId) {
+      blackoutWhere.OR = [
+        { chaletId: chaletId },
+        { chaletId: null }, // Global blackouts apply to all chalets
+      ];
+    }
+
     // Fetch blackout dates for the month
     const blackoutDates = await prisma.blackoutDate.findMany({
-      where: {
-        date: {
-          gte: startDate,
-          lte: endDate,
-        },
-      },
+      where: blackoutWhere,
     });
 
     // Build calendar data
@@ -144,7 +154,7 @@ export async function blockDateHandler(
   next: NextFunction
 ): Promise<void> {
   try {
-    const { startDate, endDate, visitType, reason } = req.body;
+    const { startDate, endDate, visitType, reason, chaletId } = req.body;
 
     const start = new Date(startDate);
     const end = endDate ? new Date(endDate) : start;
@@ -162,6 +172,7 @@ export async function blockDateHandler(
             visitType: visitType || null,
             reason,
             createdBy: req.admin?.id,
+            chaletId: chaletId || null,
           },
         });
         createdDates.push(blackoutDate);

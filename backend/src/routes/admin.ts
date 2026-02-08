@@ -57,7 +57,16 @@ import {
 import {
   listPricingHandler,
   updatePricingHandler,
+  listPricingMatrixHandler,
+  upsertPricingMatrixHandler,
 } from '../controllers/admin/pricing.controller.js';
+import {
+  listBookingTypesHandler,
+  getBookingTypeHandler,
+  createBookingTypeHandler,
+  updateBookingTypeHandler,
+  deleteBookingTypeHandler,
+} from '../controllers/admin/bookingTypes.controller.js';
 import {
   listSettingsHandler,
   updateSettingHandler,
@@ -115,9 +124,18 @@ router.post('/chalets/:id/images', requireAdmin, validate(addChaletImageSchema),
 router.delete('/chalets/:id/images/:imageId', requireAdmin, deleteChaletImageHandler);
 router.patch('/chalets/:id/images/reorder', requireAdmin, reorderChaletImagesHandler);
 
+// Booking Types
+router.get('/booking-types', listBookingTypesHandler);
+router.get('/booking-types/:id', getBookingTypeHandler);
+router.post('/booking-types', requireAdmin, createBookingTypeHandler);
+router.patch('/booking-types/:id', requireAdmin, updateBookingTypeHandler);
+router.delete('/booking-types/:id', requireAdmin, deleteBookingTypeHandler);
+
 // Pricing
 router.get('/pricing', listPricingHandler);
 router.patch('/pricing/:id', requireAdmin, validate(updatePricingSchema), updatePricingHandler);
+router.get('/pricing/matrix', listPricingMatrixHandler);
+router.post('/pricing/matrix', requireAdmin, upsertPricingMatrixHandler);
 
 // Settings
 router.get('/settings', listSettingsHandler);

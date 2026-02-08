@@ -91,6 +91,18 @@ export interface ChaletImage {
   sortOrder: number;
 }
 
+export interface BookingType {
+  id: string;
+  nameAr: string;
+  nameEn: string;
+  slug: string;
+  isActive: boolean;
+}
+
+export interface ChaletBookingType {
+  bookingType: BookingType;
+}
+
 export interface Chalet {
   id: string;
   nameAr: string;
@@ -105,6 +117,7 @@ export interface Chalet {
   isActive: boolean;
   createdAt: string;
   images: ChaletImage[];
+  chaletBookingTypes?: ChaletBookingType[];
   _count?: { bookings: number };
 }
 
@@ -117,6 +130,7 @@ export interface CreateChaletData {
   amenities?: string[];
   imageUrl?: string;
   sortOrder?: number;
+  bookingTypeIds?: string[];
 }
 
 export interface UpdateChaletData {
@@ -129,6 +143,7 @@ export interface UpdateChaletData {
   imageUrl?: string | null;
   sortOrder?: number;
   isActive?: boolean;
+  bookingTypeIds?: string[];
 }
 
 export const chaletsApi = {
@@ -303,11 +318,12 @@ export interface BlockDateData {
   endDate?: string;
   visitType?: 'DAY_VISIT' | 'OVERNIGHT_STAY';
   reason?: string;
+  chaletId?: string;
 }
 
 export const calendarApi = {
-  get: async (year: number, month: number) => {
-    const res = await apiClient.get('/admin/calendar', { params: { year, month } });
+  get: async (year: number, month: number, chaletId?: string) => {
+    const res = await apiClient.get('/admin/calendar', { params: { year, month, chaletId } });
     return res.data;
   },
   block: async (data: BlockDateData) => {

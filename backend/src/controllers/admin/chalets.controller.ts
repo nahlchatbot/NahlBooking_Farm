@@ -25,6 +25,13 @@ export async function listChaletsHandler(
         images: {
           orderBy: { sortOrder: 'asc' },
         },
+        chaletBookingTypes: {
+          include: {
+            bookingType: {
+              select: { id: true, nameAr: true, nameEn: true, slug: true },
+            },
+          },
+        },
         _count: {
           select: { bookings: true },
         },
@@ -97,13 +104,24 @@ export async function createChaletHandler(
       slug = `${slug}-${Date.now()}`;
     }
 
+    // Extract bookingTypeIds from request body
+    const { bookingTypeIds, ...chaletData } = req.body;
+
     const chalet = await prisma.chalet.create({
       data: {
-        ...data,
+        ...chaletData,
         slug,
+        ...(bookingTypeIds?.length && {
+          chaletBookingTypes: {
+            create: bookingTypeIds.map((btId: string) => ({ bookingTypeId: btId })),
+          },
+        }),
       },
       include: {
         images: true,
+        chaletBookingTypes: {
+          include: { bookingType: { select: { id: true, nameAr: true, nameEn: true } } },
+        },
       },
     });
 
@@ -139,12 +157,26 @@ export async function updateChaletHandler(
       return;
     }
 
+    // Handle bookingTypeIds separately
+    const { bookingTypeIds, ...chaletUpdates } = req.body;
+
+    // Update booking type associations if provided
+    if (bookingTypeIds !== undefined) {
+      await prisma.chaletBookingType.deleteMany({ where: { chaletId: id } });
+      if (bookingTypeIds.length > 0) {
+        await prisma.chaletBookingType.createMany({
+          data: bookingTypeIds.map((btId: string) => ({ chaletId: id, bookingTypeId: btId })),
+        });
+      }
+    }
+
     const updated = await prisma.chalet.update({
       where: { id },
-      data: updates,
+      data: chaletUpdates,
       include: {
-        images: {
-          orderBy: { sortOrder: 'asc' },
+        images: { orderBy: { sortOrder: 'asc' } },
+        chaletBookingTypes: {
+          include: { bookingType: { select: { id: true, nameAr: true, nameEn: true } } },
         },
       },
     });
@@ -153,7 +185,7 @@ export async function updateChaletHandler(
       action: 'UPDATE',
       entity: 'Chalet',
       entityId: id,
-      changes: updates,
+      changes: chaletUpdates,
       req,
     });
 

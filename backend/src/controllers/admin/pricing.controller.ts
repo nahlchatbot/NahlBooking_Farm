@@ -47,3 +47,56 @@ export async function updatePricingHandler(
     next(error);
   }
 }
+
+// --- Chalet x BookingType Pricing Matrix ---
+
+export async function listPricingMatrixHandler(
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> {
+  try {
+    const pricings = await prisma.chaletPricing.findMany({
+      include: {
+        chalet: { select: { id: true, nameAr: true, nameEn: true } },
+        bookingType: { select: { id: true, nameAr: true, nameEn: true } },
+      },
+      orderBy: [{ chalet: { sortOrder: 'asc' } }, { bookingType: { sortOrder: 'asc' } }],
+    });
+
+    successResponse(res, 'تم جلب مصفوفة الأسعار', { pricings });
+  } catch (error) {
+    next(error);
+  }
+}
+
+export async function upsertPricingMatrixHandler(
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> {
+  try {
+    const { chaletId, bookingTypeId, totalPrice, depositAmount } = req.body;
+
+    if (!chaletId || !bookingTypeId || totalPrice == null || depositAmount == null) {
+      errorResponse(res, 'جميع الحقول مطلوبة', 400);
+      return;
+    }
+
+    const pricing = await prisma.chaletPricing.upsert({
+      where: {
+        chaletId_bookingTypeId: { chaletId, bookingTypeId },
+      },
+      update: { totalPrice, depositAmount },
+      create: { chaletId, bookingTypeId, totalPrice, depositAmount },
+      include: {
+        chalet: { select: { id: true, nameAr: true, nameEn: true } },
+        bookingType: { select: { id: true, nameAr: true, nameEn: true } },
+      },
+    });
+
+    successResponse(res, 'تم حفظ السعر بنجاح', pricing);
+  } catch (error) {
+    next(error);
+  }
+}

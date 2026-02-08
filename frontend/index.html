@@ -751,24 +751,17 @@
         </div>
 
         <div>
-          <label>عدد الضيوف</label>
-          <select id="guests">
-            <option value="2">2</option>
-            <option value="4" selected>4</option>
-            <option value="6">6</option>
-            <option value="8">8</option>
-            <option value="10+">10+</option>
+          <label>الشاليه</label>
+          <select id="chaletType">
+            <option value="">جارٍ التحميل...</option>
           </select>
+          <small id="chaletCapacity" style="color:var(--muted);font-size:12px;margin-top:4px;display:none;"></small>
         </div>
 
         <div>
-          <label>نوع الشاليه (اختياري)</label>
-          <select id="chaletType">
-            <option value="">يتم الاختيار لاحقاً</option>
-            <option value="شاليه مطل على النخيل">شاليه مطل على النخيل</option>
-            <option value="شاليه عائلي">شاليه عائلي</option>
-            <option value="شاليه خاص">شاليه خاص</option>
-          </select>
+          <label>عدد الضيوف</label>
+          <input id="guests" type="number" min="1" max="20" value="4" />
+          <small id="guestWarning" style="color:var(--bad);font-size:12px;margin-top:4px;display:none;"></small>
         </div>
 
         <div>
@@ -779,6 +772,15 @@
         <div>
           <label>رقم الجوال (واتساب)</label>
           <input id="phone" type="tel" placeholder="9665xxxxxxxx" />
+          <div id="otpSection" style="display:none;margin-top:8px;">
+            <div style="display:flex;gap:8px;align-items:center;">
+              <input id="otpCode" type="text" maxlength="6" placeholder="أدخل رمز التحقق" style="flex:1;text-align:center;letter-spacing:4px;font-size:18px;font-weight:bold;" />
+              <button type="button" id="verifyOtpBtn" class="btn btn-primary" style="padding:10px 16px;font-size:13px;white-space:nowrap;">تحقق</button>
+            </div>
+            <small id="otpStatus" style="color:var(--muted);font-size:12px;margin-top:4px;display:block;"></small>
+          </div>
+          <button type="button" id="requestOtpBtn" style="margin-top:8px;padding:8px 16px;border:1px solid var(--green);color:var(--green);background:transparent;border-radius:8px;cursor:pointer;font-size:13px;font-family:inherit;display:none;">إرسال رمز التحقق عبر واتساب</button>
+          <div id="phoneVerified" style="display:none;margin-top:6px;color:var(--ok);font-size:13px;font-weight:600;">✅ تم التحقق من رقم الجوال</div>
         </div>
 
         <div>
@@ -795,7 +797,7 @@
       <div class="status" id="availabilityStatus">اختر التاريخ ونوع الزيارة للتحقق من التوفر.</div>
 
       <div class="bfoot">
-        <div class="price">الإجمالي: 1400 ر.س — العربون: 700 ر.س</div>
+        <div class="price" id="priceDisplay">الإجمالي: — ر.س — العربون: — ر.س</div>
         <button class="btn btn-primary" id="submitBtn" type="button" disabled>إرسال طلب الحجز</button>
       </div>
 
@@ -1034,6 +1036,18 @@
   const elNote = document.getElementById("note");
   const elStatus = document.getElementById("availabilityStatus");
   const elSubmit = document.getElementById("submitBtn");
+  const elPriceDisplay = document.getElementById("priceDisplay");
+  const elChaletCapacity = document.getElementById("chaletCapacity");
+  const elGuestWarning = document.getElementById("guestWarning");
+  const elOtpSection = document.getElementById("otpSection");
+  const elOtpCode = document.getElementById("otpCode");
+  const elOtpStatus = document.getElementById("otpStatus");
+  const elRequestOtpBtn = document.getElementById("requestOtpBtn");
+  const elVerifyOtpBtn = document.getElementById("verifyOtpBtn");
+  const elPhoneVerified = document.getElementById("phoneVerified");
+
+  let chaletsData = [];
+  let phoneVerified = false;
 
   function setStatus(text, state){
     if (!elStatus) return;
@@ -1055,6 +1069,9 @@
     elDate.min = toIsoLocal(today);
   }
 
+  // =========================
+  // API Functions
+  // =========================
   async function apiGetAvailability(date, visitType){
     const url = `/api/availability?date=${encodeURIComponent(date)}&visitType=${encodeURIComponent(visitType)}`;
     const res = await fetch(url, { method: "GET" });
@@ -1070,6 +1087,211 @@
     return res.json();
   }
 
+  async function apiGetChalets(){
+    try {
+      const res = await fetch(`/api/chalets`, { method: "GET" });
+      return res.json();
+    } catch { return { ok: false, data: [] }; }
+  }
+
+  async function apiRequestOtp(phone){
+    const res = await fetch(`/api/phone/request-otp`, {
+      method: "POST",
+      headers: {"Content-Type":"application/json"},
+      body: JSON.stringify({ phone })
+    });
+    return res.json();
+  }
+
+  async function apiVerifyOtp(phone, code){
+    const res = await fetch(`/api/phone/verify-otp`, {
+      method: "POST",
+      headers: {"Content-Type":"application/json"},
+      body: JSON.stringify({ phone, code })
+    });
+    return res.json();
+  }
+
+  // =========================
+  // Load Chalets Dynamically
+  // =========================
+  async function loadChalets(){
+    if (!elChalet) return;
+    try {
+      const res = await apiGetChalets();
+      const chalets = res?.data?.chalets || res?.data || [];
+      chaletsData = chalets;
+      elChalet.innerHTML = '<option value="">اختر الشاليه</option>';
+      chalets.forEach(c => {
+        if (!c.isActive) return;
+        const opt = document.createElement("option");
+        opt.value = c.id;
+        opt.textContent = c.nameAr || c.nameEn;
+        opt.dataset.maxGuests = c.maxGuests || 20;
+        // Store pricing data
+        if (c.chaletPricings && c.chaletPricings.length) {
+          opt.dataset.pricings = JSON.stringify(c.chaletPricings);
+        }
+        elChalet.appendChild(opt);
+      });
+    } catch(err) {
+      console.error("Failed to load chalets:", err);
+      elChalet.innerHTML = '<option value="">تعذر تحميل الشاليهات</option>';
+    }
+  }
+
+  // =========================
+  // Guest Validation
+  // =========================
+  function validateGuests(){
+    if (!elChalet || !elGuests || !elGuestWarning) return true;
+    const selectedOpt = elChalet.options[elChalet.selectedIndex];
+    if (!selectedOpt || !selectedOpt.value) {
+      elGuestWarning.style.display = "none";
+      return true;
+    }
+    const maxGuests = parseInt(selectedOpt.dataset.maxGuests) || 20;
+    const guests = parseInt(elGuests.value) || 0;
+    if (guests > maxGuests) {
+      elGuestWarning.textContent = `الحد الأقصى لهذا الشاليه: ${maxGuests} ضيوف`;
+      elGuestWarning.style.display = "block";
+      return false;
+    }
+    elGuestWarning.style.display = "none";
+    return true;
+  }
+
+  // =========================
+  // Price Display
+  // =========================
+  function updatePriceDisplay(){
+    if (!elChalet || !elVisit || !elPriceDisplay) return;
+    const selectedOpt = elChalet.options[elChalet.selectedIndex];
+    if (!selectedOpt || !selectedOpt.value || !selectedOpt.dataset.pricings) {
+      elPriceDisplay.textContent = "الإجمالي: — ر.س — العربون: — ر.س";
+      return;
+    }
+    try {
+      const pricings = JSON.parse(selectedOpt.dataset.pricings);
+      const visitType = elVisit.value;
+      // Find matching pricing by visit type slug
+      const visitSlug = visitType === "زيارة نهارية" ? "day-visit" : "overnight-stay";
+      const pricing = pricings.find(p => p.bookingType?.slug === visitSlug);
+      if (pricing) {
+        elPriceDisplay.textContent = `الإجمالي: ${pricing.totalPrice} ر.س — العربون: ${pricing.depositAmount} ر.س`;
+      } else {
+        elPriceDisplay.textContent = "الإجمالي: — ر.س — العربون: — ر.س";
+      }
+    } catch {
+      elPriceDisplay.textContent = "الإجمالي: — ر.س — العربون: — ر.س";
+    }
+  }
+
+  // Chalet change handler
+  function onChaletChange(){
+    const selectedOpt = elChalet?.options[elChalet.selectedIndex];
+    if (selectedOpt && selectedOpt.value && elChaletCapacity) {
+      const maxGuests = selectedOpt.dataset.maxGuests || "20";
+      elChaletCapacity.textContent = `السعة القصوى: ${maxGuests} ضيوف`;
+      elChaletCapacity.style.display = "block";
+    } else if (elChaletCapacity) {
+      elChaletCapacity.style.display = "none";
+    }
+    validateGuests();
+    updatePriceDisplay();
+  }
+
+  elChalet?.addEventListener("change", onChaletChange);
+  elGuests?.addEventListener("input", validateGuests);
+  elVisit?.addEventListener("change", updatePriceDisplay);
+
+  // =========================
+  // OTP Phone Verification
+  // =========================
+  function showOtpButton(){
+    const phone = (elPhone?.value || "").trim();
+    if (phone.length >= 10 && !phoneVerified) {
+      if (elRequestOtpBtn) elRequestOtpBtn.style.display = "inline-block";
+    } else {
+      if (elRequestOtpBtn) elRequestOtpBtn.style.display = "none";
+    }
+    // Reset verification if phone changes
+    if (phoneVerified) {
+      phoneVerified = false;
+      if (elPhoneVerified) elPhoneVerified.style.display = "none";
+      if (elOtpSection) elOtpSection.style.display = "none";
+    }
+  }
+
+  elPhone?.addEventListener("input", showOtpButton);
+
+  elRequestOtpBtn?.addEventListener("click", async () => {
+    const phone = (elPhone?.value || "").trim();
+    if (!phone) return;
+    elRequestOtpBtn.disabled = true;
+    elRequestOtpBtn.textContent = "جارٍ الإرسال...";
+    try {
+      const res = await apiRequestOtp(phone);
+      if (res?.ok) {
+        if (elOtpSection) elOtpSection.style.display = "block";
+        if (elRequestOtpBtn) elRequestOtpBtn.style.display = "none";
+        if (elOtpStatus) {
+          elOtpStatus.textContent = "تم إرسال رمز التحقق عبر واتساب";
+          elOtpStatus.style.color = "var(--ok)";
+        }
+      } else {
+        if (elOtpStatus) {
+          elOtpStatus.textContent = res?.message || "فشل إرسال الرمز";
+          elOtpStatus.style.color = "var(--bad)";
+          elOtpSection.style.display = "block";
+        }
+      }
+    } catch {
+      if (elOtpStatus) {
+        elOtpStatus.textContent = "تعذر الاتصال بالخادم";
+        elOtpStatus.style.color = "var(--bad)";
+      }
+    }
+    elRequestOtpBtn.disabled = false;
+    elRequestOtpBtn.textContent = "إرسال رمز التحقق عبر واتساب";
+  });
+
+  elVerifyOtpBtn?.addEventListener("click", async () => {
+    const phone = (elPhone?.value || "").trim();
+    const code = (elOtpCode?.value || "").trim();
+    if (!code || code.length < 4) {
+      if (elOtpStatus) {
+        elOtpStatus.textContent = "يرجى إدخال رمز التحقق";
+        elOtpStatus.style.color = "var(--bad)";
+      }
+      return;
+    }
+    elVerifyOtpBtn.disabled = true;
+    try {
+      const res = await apiVerifyOtp(phone, code);
+      if (res?.ok) {
+        phoneVerified = true;
+        if (elOtpSection) elOtpSection.style.display = "none";
+        if (elPhoneVerified) elPhoneVerified.style.display = "block";
+        if (elRequestOtpBtn) elRequestOtpBtn.style.display = "none";
+      } else {
+        if (elOtpStatus) {
+          elOtpStatus.textContent = res?.message || "رمز التحقق غير صحيح";
+          elOtpStatus.style.color = "var(--bad)";
+        }
+      }
+    } catch {
+      if (elOtpStatus) {
+        elOtpStatus.textContent = "تعذر التحقق";
+        elOtpStatus.style.color = "var(--bad)";
+      }
+    }
+    elVerifyOtpBtn.disabled = false;
+  });
+
+  // =========================
+  // Availability Check
+  // =========================
   async function checkAvailability(){
     const date = (elDate?.value || "").trim();
     const visitType = (elVisit?.value || "").trim();
@@ -1104,7 +1326,22 @@
     }
   }
 
+  // =========================
+  // Submit Booking
+  // =========================
   async function submitBooking(){
+    // Validate phone verification
+    if (!phoneVerified) {
+      setStatus("يرجى التحقق من رقم الجوال أولاً عبر رمز الواتساب.", "bad");
+      return;
+    }
+
+    // Validate guest count
+    if (!validateGuests()) {
+      setStatus("عدد الضيوف يتجاوز السعة القصوى للشاليه المختار.", "bad");
+      return;
+    }
+
     const payload = {
       date: (elDate?.value || "").trim(),
       visitType: (elVisit?.value || "").trim(),
@@ -1155,7 +1392,9 @@
   elVisit?.addEventListener("change", checkAvailability);
   elSubmit?.addEventListener("click", submitBooking);
 
+  // Initialize
   initDefaultDate();
+  loadChalets();
   checkAvailability();
 
   // Success modal handlers
@@ -1167,6 +1406,11 @@
     if (elPhone) elPhone.value = "";
     if (elEmail) elEmail.value = "";
     if (elNote) elNote.value = "";
+    if (elOtpCode) elOtpCode.value = "";
+    phoneVerified = false;
+    if (elPhoneVerified) elPhoneVerified.style.display = "none";
+    if (elOtpSection) elOtpSection.style.display = "none";
+    if (elRequestOtpBtn) elRequestOtpBtn.style.display = "none";
     setStatus("", "");
     if (elSubmit) elSubmit.disabled = true;
     checkAvailability();

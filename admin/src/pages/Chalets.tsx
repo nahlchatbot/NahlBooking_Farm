@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { chaletsApi, Chalet, CreateChaletData, UpdateChaletData } from '../api/client';
+import { apiClient, chaletsApi, Chalet, CreateChaletData, UpdateChaletData, BookingType } from '../api/client';
 import {
   Home,
   Users,
@@ -56,12 +56,20 @@ export default function Chalets() {
     descriptionAr: '',
     descriptionEn: '',
     amenities: [],
+    bookingTypeIds: [],
   });
 
   const { data, isLoading } = useQuery({
     queryKey: ['chalets'],
     queryFn: chaletsApi.list,
   });
+
+  const { data: bookingTypesData } = useQuery({
+    queryKey: ['booking-types'],
+    queryFn: () => apiClient.get('/admin/booking-types'),
+  });
+
+  const bookingTypes: BookingType[] = bookingTypesData?.data?.data || bookingTypesData?.data || [];
 
   const createMutation = useMutation({
     mutationFn: chaletsApi.create,
@@ -114,6 +122,7 @@ export default function Chalets() {
       descriptionAr: '',
       descriptionEn: '',
       amenities: [],
+      bookingTypeIds: [],
     });
   };
 
@@ -147,6 +156,7 @@ export default function Chalets() {
       descriptionAr: chalet.descriptionAr || '',
       descriptionEn: chalet.descriptionEn || '',
       amenities: chalet.amenities || [],
+      bookingTypeIds: chalet.chaletBookingTypes?.map((cbt) => cbt.bookingType.id) || [],
     });
     setShowEditModal(true);
   };
@@ -172,9 +182,22 @@ export default function Chalets() {
     }
   };
 
+  const toggleBookingType = (bookingTypeId: string) => {
+    const current = formData.bookingTypeIds || [];
+    if (current.includes(bookingTypeId)) {
+      setFormData({ ...formData, bookingTypeIds: current.filter((id) => id !== bookingTypeId) });
+    } else {
+      setFormData({ ...formData, bookingTypeIds: [...current, bookingTypeId] });
+    }
+  };
+
   const getAmenityLabel = (value: string) => {
     const amenity = AMENITY_OPTIONS.find((a) => a.value === value);
     return amenity ? (isRTL ? amenity.labelAr : amenity.labelEn) : value;
+  };
+
+  const getBookingTypeName = (bt: BookingType) => {
+    return isRTL ? bt.nameAr : bt.nameEn;
   };
 
   if (isLoading) {
@@ -290,6 +313,16 @@ export default function Chalets() {
                   </div>
                 )}
 
+                {chalet.chaletBookingTypes && chalet.chaletBookingTypes.length > 0 && (
+                  <div className="flex flex-wrap gap-1 mb-3">
+                    {chalet.chaletBookingTypes.map((cbt) => (
+                      <Badge key={cbt.bookingType.id} variant="primary" size="sm">
+                        {getBookingTypeName(cbt.bookingType)}
+                      </Badge>
+                    ))}
+                  </div>
+                )}
+
                 <div className="flex items-center justify-between pt-3 border-t">
                   <span className="text-xs text-gray-400">
                     {chalet._count?.bookings || 0} {isRTL ? 'حجز' : 'bookings'}
@@ -332,6 +365,9 @@ export default function Chalets() {
                     {isRTL ? 'السعة' : 'Capacity'}
                   </th>
                   <th className="text-start py-3 px-4 text-xs font-semibold text-gray-500 uppercase">
+                    {isRTL ? 'أنواع الحجز' : 'Booking Types'}
+                  </th>
+                  <th className="text-start py-3 px-4 text-xs font-semibold text-gray-500 uppercase">
                     {isRTL ? 'المميزات' : 'Amenities'}
                   </th>
                   <th className="text-start py-3 px-4 text-xs font-semibold text-gray-500 uppercase">
@@ -360,6 +396,18 @@ export default function Chalets() {
                       <div className="flex items-center gap-1 text-gray-600">
                         <Users className="h-4 w-4" />
                         {chalet.maxGuests}
+                      </div>
+                    </td>
+                    <td className="py-3 px-4">
+                      <div className="flex flex-wrap gap-1">
+                        {chalet.chaletBookingTypes?.map((cbt) => (
+                          <Badge key={cbt.bookingType.id} variant="primary" size="sm">
+                            {getBookingTypeName(cbt.bookingType)}
+                          </Badge>
+                        ))}
+                        {(!chalet.chaletBookingTypes || chalet.chaletBookingTypes.length === 0) && (
+                          <span className="text-sm text-gray-400">{isRTL ? 'لا يوجد' : 'None'}</span>
+                        )}
                       </div>
                     </td>
                     <td className="py-3 px-4">
@@ -486,6 +534,45 @@ export default function Chalets() {
                 </button>
               ))}
             </div>
+          </div>
+
+          {/* Booking Types checkbox group */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1.5">
+              {isRTL ? 'أنواع الحجز المتاحة' : 'Available Booking Types'}
+            </label>
+            <p className="text-xs text-gray-500 mb-2">
+              {isRTL ? 'اختر أنواع الحجز التي يمكن حجزها لهذا الشاليه' : 'Select which booking types can be booked for this chalet'}
+            </p>
+            {bookingTypes.length === 0 ? (
+              <p className="text-sm text-gray-400 italic">
+                {isRTL ? 'لا توجد أنواع حجز. أضف أنواع حجز أولاً.' : 'No booking types available. Add booking types first.'}
+              </p>
+            ) : (
+              <div className="space-y-2 border border-gray-200 rounded-lg p-3">
+                {bookingTypes.map((bt) => (
+                  <label
+                    key={bt.id}
+                    className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"
+                  >
+                    <input
+                      type="checkbox"
+                      checked={formData.bookingTypeIds?.includes(bt.id) || false}
+                      onChange={() => toggleBookingType(bt.id)}
+                      className="h-4 w-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+                    />
+                    <span className="text-sm text-gray-700">
+                      {getBookingTypeName(bt)}
+                    </span>
+                    {!bt.isActive && (
+                      <Badge variant="default" size="sm">
+                        {isRTL ? 'معطل' : 'Inactive'}
+                      </Badge>
+                    )}
+                  </label>
+                ))}
+              </div>
+            )}
           </div>
         </div>
         <ModalFooter>
