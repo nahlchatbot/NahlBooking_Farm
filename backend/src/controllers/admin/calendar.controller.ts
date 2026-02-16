@@ -12,7 +12,13 @@ interface CalendarDate {
     customerName: string;
     visitType: string;
     status: string;
+    chaletNameAr?: string;
+    chaletNameEn?: string;
   }[];
+  // Counts for "All Chalets" mode
+  totalChalets?: number;
+  dayVisitBookedCount?: number;
+  overnightBookedCount?: number;
 }
 
 export async function getCalendarHandler(
@@ -70,6 +76,12 @@ export async function getCalendarHandler(
       where: blackoutWhere,
     });
 
+    // When "All Chalets" mode, get total active chalets count
+    let totalChalets = 0;
+    if (!chaletId) {
+      totalChalets = await prisma.chalet.count({ where: { isActive: true } });
+    }
+
     // Build calendar data
     const dates: CalendarDate[] = [];
     const currentDate = new Date(startDate);
@@ -113,6 +125,20 @@ export async function getCalendarHandler(
         if (overnightBooking) overnightStatus = 'booked';
       }
 
+      // Count unique chalets booked per visit type (All Chalets mode only)
+      let dayVisitBookedCount: number | undefined;
+      let overnightBookedCount: number | undefined;
+      if (!chaletId && totalChalets > 0) {
+        const dayVisitChalets = new Set(
+          dayBookings.filter((b) => b.visitType === 'DAY_VISIT').map((b) => b.chaletId)
+        );
+        const overnightChalets = new Set(
+          dayBookings.filter((b) => b.visitType === 'OVERNIGHT_STAY').map((b) => b.chaletId)
+        );
+        dayVisitBookedCount = dayVisitChalets.size;
+        overnightBookedCount = overnightChalets.size;
+      }
+
       dates.push({
         date: dateStr,
         dayVisit: dayVisitStatus,
@@ -123,7 +149,14 @@ export async function getCalendarHandler(
           customerName: b.customerName,
           visitType: b.visitType,
           status: b.status,
+          chaletNameAr: b.chalet?.nameAr,
+          chaletNameEn: b.chalet?.nameEn,
         })),
+        ...((!chaletId && totalChalets > 0) ? {
+          totalChalets,
+          dayVisitBookedCount,
+          overnightBookedCount,
+        } : {}),
       });
 
       currentDate.setDate(currentDate.getDate() + 1);

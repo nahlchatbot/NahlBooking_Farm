@@ -290,6 +290,8 @@ export interface CalendarBooking {
   customerName: string;
   visitType: string;
   status: string;
+  chaletNameAr?: string;
+  chaletNameEn?: string;
 }
 
 export interface CalendarDate {
@@ -297,6 +299,10 @@ export interface CalendarDate {
   dayVisit: 'available' | 'booked' | 'blackout';
   overnight: 'available' | 'booked' | 'blackout';
   bookings: CalendarBooking[];
+  // "All Chalets" mode counts
+  totalChalets?: number;
+  dayVisitBookedCount?: number;
+  overnightBookedCount?: number;
 }
 
 export interface CalendarSummary {

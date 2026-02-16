@@ -49,7 +49,46 @@ async function main() {
   }
   console.log('✓ Chalets seeded');
 
-  // Seed Pricing
+  // Seed Booking Types
+  const bookingTypes = [
+    { nameAr: 'زيارة نهارية', nameEn: 'Day Visit', slug: 'day-visit', startTime: '08:00', endTime: '19:00', sortOrder: 1 },
+    { nameAr: 'إقامة ليلية', nameEn: 'Overnight Stay', slug: 'overnight-stay', startTime: '20:00', endTime: '07:00', sortOrder: 2 },
+  ];
+
+  const seededBookingTypes = [];
+  for (const bt of bookingTypes) {
+    const result = await prisma.bookingType.upsert({
+      where: { slug: bt.slug },
+      update: bt,
+      create: bt,
+    });
+    seededBookingTypes.push(result);
+  }
+  console.log('✓ Booking Types seeded');
+
+  // Seed ChaletBookingTypes and placeholder ChaletPricings
+  // NOTE: Admin should set actual prices via Admin Dashboard > Pricing page
+  const allChalets = await prisma.chalet.findMany();
+  for (const chalet of allChalets) {
+    for (const bt of seededBookingTypes) {
+      await prisma.chaletBookingType.upsert({
+        where: { chaletId_bookingTypeId: { chaletId: chalet.id, bookingTypeId: bt.id } },
+        update: {},
+        create: { chaletId: chalet.id, bookingTypeId: bt.id },
+      });
+      const existing = await prisma.chaletPricing.findUnique({
+        where: { chaletId_bookingTypeId: { chaletId: chalet.id, bookingTypeId: bt.id } },
+      });
+      if (!existing) {
+        await prisma.chaletPricing.create({
+          data: { chaletId: chalet.id, bookingTypeId: bt.id, totalPrice: 0, depositAmount: 0 },
+        });
+      }
+    }
+  }
+  console.log('✓ Chalet Booking Types & Pricing seeded');
+
+  // Seed Legacy Pricing
   const pricing = [
     { visitType: VisitType.DAY_VISIT, totalPrice: 1400, depositAmount: 700 },
     { visitType: VisitType.OVERNIGHT_STAY, totalPrice: 1400, depositAmount: 700 },
@@ -83,9 +122,9 @@ async function main() {
 
   // Seed Settings
   const settings = [
-    { key: 'whatsapp_number', value: '966500000000', type: 'string' },
-    { key: 'resort_name_ar', value: 'منتجع المزرعة', type: 'string' },
-    { key: 'resort_name_en', value: 'Farm Resort', type: 'string' },
+    { key: 'whatsapp_number', value: '966570698531', type: 'string' },
+    { key: 'resort_name_ar', value: 'منتجع الواحة', type: 'string' },
+    { key: 'resort_name_en', value: 'Oasis Resort', type: 'string' },
     { key: 'cancellation_free_hours', value: '48', type: 'number' },
     { key: 'cancellation_partial_hours', value: '24', type: 'number' },
     { key: 'greenapi_enabled', value: 'false', type: 'boolean' },
@@ -93,12 +132,12 @@ async function main() {
     { key: 'greenapi_api_token', value: '', type: 'string' },
     {
       key: 'whatsapp_template_new_booking_ar',
-      value: 'مرحباً {customerName}،\nتم استلام طلب حجزك في منتجع المزرعة.\n📅 التاريخ: {date}\n🕐 النوع: {visitType}\n👥 عدد الضيوف: {guests}\n📋 رقم الحجز: {bookingRef}\nسيتم التواصل معك قريباً للتأكيد.',
+      value: 'مرحباً {customerName}،\nتم استلام طلب حجزك في منتجع الواحة.\n📅 التاريخ: {date}\n🕐 النوع: {visitType}\n👥 عدد الضيوف: {guests}\n📋 رقم الحجز: {bookingRef}\nسيتم التواصل معك قريباً للتأكيد.',
       type: 'string',
     },
     {
       key: 'whatsapp_template_new_booking_en',
-      value: 'Hello {customerName},\nYour booking request has been received at Farm Resort.\n📅 Date: {date}\n🕐 Type: {visitType}\n👥 Guests: {guests}\n📋 Booking Ref: {bookingRef}\nWe will contact you shortly for confirmation.',
+      value: 'Hello {customerName},\nYour booking request has been received at Oasis Resort.\n📅 Date: {date}\n🕐 Type: {visitType}\n👥 Guests: {guests}\n📋 Booking Ref: {bookingRef}\nWe will contact you shortly for confirmation.',
       type: 'string',
     },
     {

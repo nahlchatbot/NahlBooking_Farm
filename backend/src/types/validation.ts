@@ -17,7 +17,7 @@ export const createBookingSchema = z.object({
   visitType: z.enum(visitTypeValues),
   customerName: z.string().min(2, 'Name must be at least 2 characters').max(100),
   customerPhone: z.string().regex(/^9665\d{8}$/, 'Phone must be in format 9665xxxxxxxx'),
-  guests: z.coerce.number().int().min(1).max(10).optional().default(2),
+  guests: z.coerce.number().int().min(1).max(20).optional().default(2),
   chaletType: z.string().optional().default(''),
   email: z.string().email().optional().or(z.literal('')).transform(v => v || undefined),
   notes: z.string().max(500).optional(),

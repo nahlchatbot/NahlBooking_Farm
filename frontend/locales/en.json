@@ -12,12 +12,12 @@
     "admin": "Admin Panel"
   },
   "hero": {
-    "title": "Farm Resort",
+    "title": "Oasis Resort",
     "subtitle": "Relax among the palms... Unforgettable serenity",
     "cta": "Book Now"
   },
   "highlights": {
-    "title": "Why Farm Resort?",
+    "title": "Why Oasis Resort?",
     "palm": "Palm Walkways",
     "palmDesc": "Stroll through palm trees in peaceful rural ambiance",
     "fire": "Fire Pit",
@@ -154,7 +154,7 @@
     "concierge": "Concierge service available via WhatsApp"
   },
   "footer": {
-    "copyright": "© 2024 Farm Resort. All rights reserved.",
+    "copyright": "© 2024 Oasis Resort. All rights reserved.",
     "privacy": "Privacy Policy",
     "terms": "Terms & Conditions"
   },

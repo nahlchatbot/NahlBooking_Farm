@@ -121,18 +121,13 @@ export async function createBookingHandler(
     //   return;
     // }
 
-    // Validate guest count against chalet capacity
+    // Advisory guest count check (non-blocking)
     if (input.chaletType && input.chaletType !== '' && input.chaletType !== 'يتم الاختيار لاحقاً') {
       const chalet = await prisma.chalet.findFirst({
         where: { OR: [{ nameAr: input.chaletType }, { id: input.chaletType }], isActive: true },
       });
       if (chalet && input.guests && input.guests > chalet.maxGuests) {
-        errorResponse(
-          res,
-          `عدد الضيوف (${input.guests}) يتجاوز سعة الشاليه "${chalet.nameAr}" (${chalet.maxGuests} ضيوف كحد أقصى)`,
-          400
-        );
-        return;
+        console.warn(`[Advisory] Guests (${input.guests}) exceeds chalet "${chalet.nameAr}" capacity (${chalet.maxGuests})`);
       }
     }
 

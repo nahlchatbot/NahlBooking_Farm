@@ -290,22 +290,32 @@ export default function Calendar() {
                         <div className="mt-1 space-y-1">
                           <div className="flex items-center gap-1">
                             <span className={clsx(
-                              'w-2 h-2 rounded-full',
+                              'w-2 h-2 rounded-full flex-shrink-0',
                               date.dayVisit === 'available' ? 'bg-green-500' :
                               date.dayVisit === 'booked' ? 'bg-blue-500' : 'bg-red-500'
                             )} />
-                            <span className="text-xs text-gray-600 dark:text-gray-400">
+                            <span className="text-xs text-gray-600 dark:text-gray-400 truncate">
                               {isRTL ? 'نهاري' : 'Day'}
+                              {date.totalChalets && date.dayVisitBookedCount ? (
+                                <span className="text-blue-600 font-semibold ms-0.5">
+                                  {` ${date.dayVisitBookedCount}/${date.totalChalets}`}
+                                </span>
+                              ) : null}
                             </span>
                           </div>
                           <div className="flex items-center gap-1">
                             <span className={clsx(
-                              'w-2 h-2 rounded-full',
+                              'w-2 h-2 rounded-full flex-shrink-0',
                               date.overnight === 'available' ? 'bg-green-500' :
                               date.overnight === 'booked' ? 'bg-blue-500' : 'bg-red-500'
                             )} />
-                            <span className="text-xs text-gray-600 dark:text-gray-400">
+                            <span className="text-xs text-gray-600 dark:text-gray-400 truncate">
                               {isRTL ? 'ليلي' : 'Night'}
+                              {date.totalChalets && date.overnightBookedCount ? (
+                                <span className="text-blue-600 font-semibold ms-0.5">
+                                  {` ${date.overnightBookedCount}/${date.totalChalets}`}
+                                </span>
+                              ) : null}
                             </span>
                           </div>
                         </div>
@@ -370,6 +380,11 @@ export default function Calendar() {
                    selectedDate.dayVisit === 'booked' ? (isRTL ? 'محجوز' : 'Booked') :
                    (isRTL ? 'محجوب' : 'Blocked')}
                 </Badge>
+                {selectedDate.totalChalets && selectedDate.dayVisitBookedCount != null && (
+                  <div className="text-xs text-gray-500 mt-1">
+                    {selectedDate.dayVisitBookedCount}/{selectedDate.totalChalets} {isRTL ? 'شاليه محجوز' : 'chalets booked'}
+                  </div>
+                )}
               </div>
               <div className={clsx(
                 'p-4 rounded-xl border',
@@ -386,6 +401,11 @@ export default function Calendar() {
                    selectedDate.overnight === 'booked' ? (isRTL ? 'محجوز' : 'Booked') :
                    (isRTL ? 'محجوب' : 'Blocked')}
                 </Badge>
+                {selectedDate.totalChalets && selectedDate.overnightBookedCount != null && (
+                  <div className="text-xs text-gray-500 mt-1">
+                    {selectedDate.overnightBookedCount}/{selectedDate.totalChalets} {isRTL ? 'شاليه محجوز' : 'chalets booked'}
+                  </div>
+                )}
               </div>
             </div>
 
@@ -405,8 +425,15 @@ export default function Calendar() {
                           {booking.status === 'CONFIRMED' ? (isRTL ? 'مؤكد' : 'Confirmed') : (isRTL ? 'معلق' : 'Pending')}
                         </Badge>
                       </div>
-                      <div className="text-sm text-gray-600 mt-1">
-                        {booking.visitType === 'DAY_VISIT' ? (isRTL ? 'زيارة نهارية' : 'Day Visit') : (isRTL ? 'إقامة ليلية' : 'Overnight Stay')}
+                      <div className="text-sm text-gray-600 mt-1 flex items-center gap-2">
+                        <span>
+                          {booking.visitType === 'DAY_VISIT' ? (isRTL ? 'زيارة نهارية' : 'Day Visit') : (isRTL ? 'إقامة ليلية' : 'Overnight Stay')}
+                        </span>
+                        {!selectedChaletId && (booking.chaletNameAr || booking.chaletNameEn) && (
+                          <Badge variant="default">
+                            {isRTL ? booking.chaletNameAr : booking.chaletNameEn}
+                          </Badge>
+                        )}
                       </div>
                     </div>
                   ))}
