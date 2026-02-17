@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '../api/client';
-import { FileText, Eye, AlertCircle, Clock, MapPin, Phone, Globe, User, Hash } from 'lucide-react';
+import { FileText, Eye, AlertCircle, Clock, MapPin, Phone, Globe, User, Hash, Download } from 'lucide-react';
 import { Card, CardContent } from '../components/ui/Card';
 import { Badge } from '../components/ui/Badge';
 import { Button } from '../components/ui/Button';
@@ -99,9 +99,26 @@ const amenityLabels: Record<string, { ar: string; en: string }> = {
 };
 
 const getAmenityLabel = (key: string, isRTL: boolean): string => {
+  if (key.startsWith('custom:')) return key.slice(7);
   const entry = amenityLabels[key];
   if (entry) return isRTL ? entry.ar : entry.en;
   return key;
+};
+
+const downloadImage = async (url: string, filename: string) => {
+  try {
+    const response = await fetch(url);
+    const blob = await response.blob();
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(link.href);
+  } catch {
+    window.open(url, '_blank');
+  }
 };
 
 // --- Component ---
@@ -323,8 +340,17 @@ export default function Onboarding() {
             {/* Logo */}
             {selectedSubmission.logoUrl && (
               <div className="p-4 bg-gray-50 rounded-lg">
-                <div className="text-xs text-gray-500 mb-2">
-                  {isRTL ? 'الشعار' : 'Logo'}
+                <div className="flex items-center justify-between mb-2">
+                  <div className="text-xs text-gray-500">
+                    {isRTL ? 'الشعار' : 'Logo'}
+                  </div>
+                  <button
+                    onClick={() => downloadImage(selectedSubmission.logoUrl!, `logo-${selectedSubmission.resortNameEn}`)}
+                    className="flex items-center gap-1 text-xs text-blue-600 hover:text-blue-800 transition-colors"
+                  >
+                    <Download size={14} />
+                    {isRTL ? 'تحميل' : 'Download'}
+                  </button>
                 </div>
                 <img
                   src={selectedSubmission.logoUrl}
@@ -337,8 +363,17 @@ export default function Onboarding() {
             {/* Hero Image */}
             {selectedSubmission.heroImageUrl && (
               <div className="p-4 bg-gray-50 rounded-lg">
-                <div className="text-xs text-gray-500 mb-2">
-                  {isRTL ? 'الصورة الرئيسية' : 'Hero Image'}
+                <div className="flex items-center justify-between mb-2">
+                  <div className="text-xs text-gray-500">
+                    {isRTL ? 'الصورة الرئيسية' : 'Hero Image'}
+                  </div>
+                  <button
+                    onClick={() => downloadImage(selectedSubmission.heroImageUrl!, `hero-${selectedSubmission.resortNameEn}`)}
+                    className="flex items-center gap-1 text-xs text-blue-600 hover:text-blue-800 transition-colors"
+                  >
+                    <Download size={14} />
+                    {isRTL ? 'تحميل' : 'Download'}
+                  </button>
                 </div>
                 <img
                   src={selectedSubmission.heroImageUrl}
@@ -351,18 +386,36 @@ export default function Onboarding() {
             {/* Gallery */}
             {selectedSubmission.galleryUrls && selectedSubmission.galleryUrls.length > 0 && (
               <div className="p-4 bg-gray-50 rounded-lg">
-                <div className="text-xs text-gray-500 mb-2">
-                  {isRTL ? 'صور المعرض' : 'Gallery'} ({selectedSubmission.galleryUrls.length})
+                <div className="flex items-center justify-between mb-2">
+                  <div className="text-xs text-gray-500">
+                    {isRTL ? 'صور المعرض' : 'Gallery'} ({selectedSubmission.galleryUrls.length})
+                  </div>
+                  <button
+                    onClick={() => selectedSubmission.galleryUrls!.forEach((url, idx) => downloadImage(url, `gallery-${selectedSubmission.resortNameEn}-${idx + 1}`))}
+                    className="flex items-center gap-1 text-xs text-blue-600 hover:text-blue-800 transition-colors"
+                  >
+                    <Download size={14} />
+                    {isRTL ? 'تحميل الكل' : 'Download All'}
+                  </button>
                 </div>
                 <div className="grid grid-cols-4 gap-2">
                   {selectedSubmission.galleryUrls.map((url, idx) => (
-                    <a key={idx} href={url} target="_blank" rel="noopener noreferrer">
-                      <img
-                        src={url}
-                        alt={`Gallery ${idx + 1}`}
-                        className="w-full h-24 object-cover rounded-lg border border-gray-200 hover:opacity-80 transition-opacity cursor-pointer"
-                      />
-                    </a>
+                    <div key={idx} className="relative group">
+                      <a href={url} target="_blank" rel="noopener noreferrer">
+                        <img
+                          src={url}
+                          alt={`Gallery ${idx + 1}`}
+                          className="w-full h-24 object-cover rounded-lg border border-gray-200 hover:opacity-80 transition-opacity cursor-pointer"
+                        />
+                      </a>
+                      <button
+                        onClick={(e) => { e.preventDefault(); downloadImage(url, `gallery-${selectedSubmission.resortNameEn}-${idx + 1}`); }}
+                        className="absolute bottom-1 left-1 p-1 bg-white/90 rounded-md shadow-sm opacity-0 group-hover:opacity-100 transition-opacity"
+                        title={isRTL ? 'تحميل' : 'Download'}
+                      >
+                        <Download size={12} className="text-gray-600" />
+                      </button>
+                    </div>
                   ))}
                 </div>
               </div>
@@ -394,16 +447,25 @@ export default function Onboarding() {
                       <p className="text-sm text-gray-500 mt-1">{chalet.description}</p>
                     )}
                     {chalet.imageUrl && (
-                      <img
-                        src={chalet.imageUrl}
-                        alt={isRTL ? chalet.nameAr : chalet.nameEn}
-                        className="w-full h-32 object-cover rounded-lg border border-gray-200 mt-2"
-                      />
+                      <div className="relative group mt-2">
+                        <img
+                          src={chalet.imageUrl}
+                          alt={isRTL ? chalet.nameAr : chalet.nameEn}
+                          className="w-full h-32 object-cover rounded-lg border border-gray-200"
+                        />
+                        <button
+                          onClick={() => downloadImage(chalet.imageUrl!, `chalet-${chalet.nameEn || chalet.nameAr}`)}
+                          className="absolute top-2 left-2 flex items-center gap-1 px-2 py-1 bg-white/90 rounded-md shadow-sm text-xs text-gray-600 opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                          <Download size={12} />
+                          {isRTL ? 'تحميل' : 'Download'}
+                        </button>
+                      </div>
                     )}
                     {chalet.amenities && chalet.amenities.length > 0 && (
                       <div className="flex flex-wrap gap-1.5 mt-2">
                         {chalet.amenities.map((amenity) => (
-                          <Badge key={amenity} variant="primary" size="sm">
+                          <Badge key={amenity} variant={amenity.startsWith('custom:') ? 'info' : 'primary'} size="sm">
                             {getAmenityLabel(amenity, isRTL)}
                           </Badge>
                         ))}

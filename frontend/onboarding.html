@@ -369,6 +369,61 @@
       font-weight: 600;
     }
 
+    .custom-amenities { margin-top: 10px; }
+    .custom-amenity-input {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+    .custom-amenity-input input {
+      flex: 1;
+      padding: 8px 12px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 14px;
+      font-family: 'Cairo', sans-serif;
+    }
+    .custom-amenity-input input:focus {
+      outline: none;
+      border-color: var(--primary);
+    }
+    .custom-amenity-input button {
+      padding: 8px 16px;
+      background: var(--primary-light);
+      color: var(--primary);
+      border: 1px solid var(--primary);
+      border-radius: 8px;
+      font-size: 14px;
+      font-family: 'Cairo', sans-serif;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .custom-amenity-input button:hover { background: #fde9c4; }
+    .custom-amenity-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+    .custom-amenity-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 12px;
+      background: var(--primary-light);
+      color: var(--primary);
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 600;
+    }
+    .custom-amenity-tag button {
+      background: none;
+      border: none;
+      color: var(--primary);
+      cursor: pointer;
+      font-size: 16px;
+      line-height: 1;
+      padding: 0;
+      opacity: 0.7;
+    }
+    .custom-amenity-tag button:hover { opacity: 1; }
+
     .add-chalet-btn {
       display: inline-flex;
       align-items: center;
@@ -1021,8 +1076,44 @@
           '<div class="amenities-grid">' +
             amenitiesHTML +
           '</div>' +
+          '<div class="custom-amenities">' +
+            '<div class="custom-amenity-input">' +
+              '<input type="text" class="custom-amenity-text" placeholder="أضف مرفق إضافي... (مثال: غرفة سينما)">' +
+              '<button type="button" onclick="addCustomAmenity(this)">+ إضافة</button>' +
+            '</div>' +
+            '<div class="custom-amenity-tags"></div>' +
+          '</div>' +
         '</div>';
     }
+
+    /* ── Custom amenities ── */
+    function addCustomAmenity(btn) {
+      var container = btn.closest('.custom-amenities');
+      var input = container.querySelector('.custom-amenity-text');
+      var value = input.value.trim();
+      if (!value) return;
+      var tagsDiv = container.querySelector('.custom-amenity-tags');
+      // Prevent duplicates
+      var existing = tagsDiv.querySelectorAll('.custom-amenity-tag');
+      for (var i = 0; i < existing.length; i++) {
+        if (existing[i].getAttribute('data-value') === value) { input.value = ''; return; }
+      }
+      var tag = document.createElement('span');
+      tag.className = 'custom-amenity-tag';
+      tag.setAttribute('data-value', value);
+      tag.innerHTML = value + ' <button type="button" onclick="this.parentElement.remove()">&times;</button>';
+      tagsDiv.appendChild(tag);
+      input.value = '';
+    }
+
+    // Allow Enter key to add custom amenity
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter' && e.target.classList.contains('custom-amenity-text')) {
+        e.preventDefault();
+        var btn = e.target.parentElement.querySelector('button');
+        addCustomAmenity(btn);
+      }
+    });
 
     /* ── Add chalet ── */
     function addChalet() {
@@ -1092,6 +1183,10 @@
         var amenities = [];
         card.querySelectorAll('.amenities-grid input[type="checkbox"]:checked').forEach(function(cb) {
           amenities.push(cb.value);
+        });
+        card.querySelectorAll('.custom-amenity-tag').forEach(function(tag) {
+          var val = tag.getAttribute('data-value');
+          if (val) amenities.push('custom:' + val);
         });
         var chaletId = card.getAttribute('data-chalet-id');
         var imageUrl = uploadState.chaletImageUrls[chaletId] || undefined;
