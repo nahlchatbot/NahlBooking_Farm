@@ -13,6 +13,7 @@ import Reports from './pages/Reports';
 import AdminUsers from './pages/AdminUsers';
 import Settings from './pages/Settings';
 import AuditLog from './pages/AuditLog';
+import Onboarding from './pages/Onboarding';
 import { Toaster } from './components/ui';
 
 function PrivateRoute({ children }: { children: React.ReactNode }) {
@@ -45,6 +46,7 @@ function App() {
           <Route path="users" element={<AdminUsers />} />
           <Route path="audit-log" element={<AuditLog />} />
           <Route path="settings" element={<Settings />} />
+          <Route path="onboarding" element={<Onboarding />} />
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

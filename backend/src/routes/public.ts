@@ -13,6 +13,7 @@ import {
   availabilitySchema,
   createBookingSchema,
   cancelBookingSchema,
+  onboardingSchema,
 } from '../types/validation.js';
 import { bookingLimiter, otpLimiter } from '../middleware/rateLimiter.js';
 import prisma from '../config/database.js';
@@ -133,5 +134,16 @@ router.post(
   validate(cancelBookingSchema, 'body'),
   cancelBookingHandler
 );
+
+// POST /api/onboarding - Submit client onboarding requirements
+router.post('/onboarding', validate(onboardingSchema, 'body'), async (req, res) => {
+  try {
+    const submission = await prisma.onboardingSubmission.create({ data: req.body });
+    res.status(201).json({ ok: true, id: submission.id });
+  } catch (err) {
+    console.error('Onboarding submission error:', err);
+    res.status(500).json({ ok: false, message: 'Failed to save submission' });
+  }
+});
 
 export default router;

@@ -241,6 +241,30 @@ model AuditLog {
   @@index([createdAt])
 }
 
+// Client Onboarding Submissions
+model OnboardingSubmission {
+  id              String   @id @default(uuid())
+  resortNameAr    String
+  resortNameEn    String
+  chalets         Json     // Array of chalet objects
+  dayVisitStart   String?
+  dayVisitEnd     String?
+  overnightStart  String?
+  overnightEnd    String?
+  pricing         String?
+  whatsappNumber  String
+  location        String?
+  cancellationHrs Int?     @default(48)
+  domain          String?
+  adminName       String
+  adminEmail      String
+  adminPhone      String
+  notes           String?
+  status          String   @default("NEW")
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
 // System Settings
 model Setting {
   key       String   @id

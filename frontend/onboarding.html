@@ -1,0 +1,1017 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>طلب المتطلبات — NahlBooking</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --green: #1f7a55;
+      --green-light: #e8f5ee;
+      --green-dark: #165a3e;
+      --gold: #d6b25e;
+      --gold-light: #fefce8;
+      --bg: #f6f4ef;
+      --white: #ffffff;
+      --text: #1e293b;
+      --text-secondary: #64748b;
+      --border: #e2e8f0;
+      --error: #dc2626;
+      --error-light: #fef2f2;
+      --radius: 12px;
+      --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+      --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
+    }
+
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Cairo', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.7;
+      min-height: 100vh;
+    }
+
+    .container {
+      max-width: 780px;
+      margin: 0 auto;
+      padding: 32px 20px 64px;
+    }
+
+    /* Header */
+    .page-header {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+
+    .page-header h1 {
+      font-size: 28px;
+      font-weight: 800;
+      color: var(--green);
+      margin-bottom: 8px;
+    }
+
+    .page-header p {
+      font-size: 15px;
+      color: var(--text-secondary);
+      max-width: 500px;
+      margin: 0 auto;
+    }
+
+    /* Cards */
+    .card {
+      background: var(--white);
+      border-radius: var(--radius);
+      padding: 28px;
+      margin-bottom: 24px;
+      box-shadow: var(--shadow);
+    }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .section-num {
+      width: 36px;
+      height: 36px;
+      background: var(--green);
+      color: var(--white);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 15px;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+
+    .card-header h2 {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    /* Form Elements */
+    .form-group {
+      margin-bottom: 18px;
+    }
+
+    .form-group:last-child {
+      margin-bottom: 0;
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    label {
+      display: block;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 6px;
+    }
+
+    label .required {
+      color: var(--error);
+      margin-right: 2px;
+    }
+
+    input[type="text"],
+    input[type="email"],
+    input[type="tel"],
+    input[type="number"],
+    input[type="url"],
+    input[type="time"],
+    textarea,
+    select {
+      width: 100%;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px 14px;
+      font-size: 15px;
+      font-family: 'Cairo', sans-serif;
+      color: var(--text);
+      background: var(--white);
+      transition: border-color 0.2s, box-shadow 0.2s;
+      outline: none;
+    }
+
+    input:focus,
+    textarea:focus,
+    select:focus {
+      border-color: var(--green);
+      box-shadow: 0 0 0 3px rgba(31,122,85,0.1);
+    }
+
+    input.input-error,
+    textarea.input-error {
+      border-color: var(--error);
+      box-shadow: 0 0 0 3px rgba(220,38,38,0.08);
+    }
+
+    .field-error {
+      font-size: 13px;
+      color: var(--error);
+      margin-top: 4px;
+      display: none;
+    }
+
+    .field-error.visible {
+      display: block;
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 100px;
+    }
+
+    input::placeholder,
+    textarea::placeholder {
+      color: #94a3b8;
+    }
+
+    /* Info box */
+    .info-box {
+      background: var(--gold-light);
+      border-right: 3px solid var(--gold);
+      border-radius: 8px;
+      padding: 16px 18px;
+      font-size: 14px;
+      color: #92400e;
+      line-height: 1.8;
+      white-space: pre-line;
+    }
+
+    /* Visit times */
+    .time-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 14px;
+      flex-wrap: wrap;
+    }
+
+    .time-row:last-child {
+      margin-bottom: 0;
+    }
+
+    .time-label {
+      font-weight: 600;
+      font-size: 14px;
+      min-width: 110px;
+      flex-shrink: 0;
+    }
+
+    .time-row input[type="time"] {
+      width: 140px;
+      flex-shrink: 0;
+    }
+
+    .time-sep {
+      color: var(--text-secondary);
+      font-size: 14px;
+    }
+
+    /* Chalet cards */
+    .chalets-container {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .chalet-card {
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 22px;
+      position: relative;
+      background: #fafafa;
+    }
+
+    .chalet-card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+
+    .chalet-num {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--green);
+    }
+
+    .remove-chalet {
+      width: 32px;
+      height: 32px;
+      border: none;
+      background: var(--error-light);
+      color: var(--error);
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 18px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s, transform 0.15s;
+      line-height: 1;
+    }
+
+    .remove-chalet:hover {
+      background: #fecaca;
+      transform: scale(1.05);
+    }
+
+    /* Amenities grid */
+    .amenities-label {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 10px;
+      display: block;
+    }
+
+    .amenities-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+    }
+
+    .amenity-check {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      font-size: 14px;
+      color: var(--text);
+      padding: 8px 10px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--white);
+      transition: border-color 0.2s, background 0.2s;
+      user-select: none;
+    }
+
+    .amenity-check:hover {
+      border-color: var(--green);
+    }
+
+    .amenity-check input[type="checkbox"] {
+      accent-color: var(--green);
+      width: 16px;
+      height: 16px;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+
+    .amenity-check input[type="checkbox"]:checked + span {
+      color: var(--green);
+      font-weight: 600;
+    }
+
+    .add-chalet-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--green-light);
+      color: var(--green);
+      border: 1px dashed var(--green);
+      border-radius: 10px;
+      padding: 12px 24px;
+      font-size: 15px;
+      font-weight: 700;
+      font-family: 'Cairo', sans-serif;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.15s;
+      margin-top: 4px;
+    }
+
+    .add-chalet-btn:hover {
+      background: #d1fae5;
+      transform: translateY(-1px);
+    }
+
+    /* Submit */
+    .submit-area {
+      text-align: center;
+      margin-top: 16px;
+    }
+
+    .submit-btn {
+      background: var(--green);
+      color: var(--white);
+      border: none;
+      border-radius: 10px;
+      padding: 16px 56px;
+      font-size: 17px;
+      font-weight: 700;
+      font-family: 'Cairo', sans-serif;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
+      box-shadow: 0 2px 8px rgba(31,122,85,0.25);
+    }
+
+    .submit-btn:hover {
+      background: var(--green-dark);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 16px rgba(31,122,85,0.3);
+    }
+
+    .submit-btn:active {
+      transform: translateY(0);
+    }
+
+    .submit-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .submit-error {
+      color: var(--error);
+      font-size: 14px;
+      margin-top: 14px;
+      display: none;
+    }
+
+    .submit-error.visible {
+      display: block;
+    }
+
+    /* Success card */
+    .success-card {
+      display: none;
+      text-align: center;
+      padding: 48px 28px;
+    }
+
+    .success-card.visible {
+      display: block;
+    }
+
+    .success-icon {
+      width: 80px;
+      height: 80px;
+      background: var(--green-light);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 24px;
+    }
+
+    .success-icon svg {
+      width: 40px;
+      height: 40px;
+      color: var(--green);
+    }
+
+    .success-card h2 {
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--green);
+      margin-bottom: 12px;
+    }
+
+    .success-card p {
+      font-size: 16px;
+      color: var(--text-secondary);
+    }
+
+    /* Footer */
+    .page-footer {
+      text-align: center;
+      padding: 32px 0 16px;
+      color: var(--text-secondary);
+      font-size: 14px;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .container {
+        padding: 20px 14px 48px;
+      }
+
+      .card {
+        padding: 20px 18px;
+      }
+
+      .form-row {
+        grid-template-columns: 1fr;
+        gap: 12px;
+      }
+
+      .amenities-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
+      }
+
+      .time-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+      }
+
+      .time-row input[type="time"] {
+        width: 100%;
+      }
+
+      .time-inputs {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        width: 100%;
+      }
+
+      .time-inputs input[type="time"] {
+        flex: 1;
+      }
+
+      .page-header h1 {
+        font-size: 24px;
+      }
+
+      .submit-btn {
+        width: 100%;
+        padding: 16px 24px;
+      }
+
+      .chalet-card {
+        padding: 16px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .amenities-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    /* Spinner */
+    .spinner {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 3px solid rgba(255,255,255,0.3);
+      border-top-color: var(--white);
+      border-radius: 50%;
+      animation: spin 0.6s linear infinite;
+      vertical-align: middle;
+      margin-left: 8px;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* Fade in */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(12px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .card {
+      animation: fadeIn 0.4s ease-out both;
+    }
+
+    .card:nth-child(2) { animation-delay: 0.05s; }
+    .card:nth-child(3) { animation-delay: 0.1s; }
+    .card:nth-child(4) { animation-delay: 0.15s; }
+    .card:nth-child(5) { animation-delay: 0.2s; }
+    .card:nth-child(6) { animation-delay: 0.25s; }
+    .card:nth-child(7) { animation-delay: 0.3s; }
+    .card:nth-child(8) { animation-delay: 0.35s; }
+    .card:nth-child(9) { animation-delay: 0.4s; }
+    .card:nth-child(10) { animation-delay: 0.45s; }
+    .card:nth-child(11) { animation-delay: 0.5s; }
+    .card:nth-child(12) { animation-delay: 0.55s; }
+    .card:nth-child(13) { animation-delay: 0.6s; }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+
+    <!-- Header -->
+    <div class="page-header">
+      <h1>طلب المتطلبات — NahlBooking</h1>
+      <p>لتجهيز نظام الحجز الخاص بكم، نحتاج إلى المعلومات التالية</p>
+    </div>
+
+    <!-- Form -->
+    <form id="onboardingForm" novalidate>
+
+      <!-- Section 1: Resort Name -->
+      <div class="card">
+        <div class="card-header">
+          <div class="section-num">1</div>
+          <h2>اسم المنتجع / المزرعة</h2>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label><span class="required">*</span> اسم المنتجع بالعربية</label>
+            <input type="text" id="resortNameAr" required placeholder="مثال: منتجع النخيل">
+            <div class="field-error" id="err-resortNameAr">هذا الحقل مطلوب</div>
+          </div>
+          <div class="form-group">
+            <label><span class="required">*</span> اسم المنتجع بالإنجليزية</label>
+            <input type="text" id="resortNameEn" required placeholder="e.g. Al Nakheel Resort" dir="ltr" style="text-align:left;">
+            <div class="field-error" id="err-resortNameEn">هذا الحقل مطلوب</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Section 2: Logo -->
+      <div class="card">
+        <div class="card-header">
+          <div class="section-num">2</div>
+          <h2>الشعار</h2>
+        </div>
+        <div class="info-box">يرجى إرسال الشعار بصيغة PNG بدقة عالية بشكل منفصل عبر واتساب</div>
+      </div>
+
+      <!-- Section 3: Chalets -->
+      <div class="card">
+        <div class="card-header">
+          <div class="section-num">3</div>
+          <h2>الشاليهات / الوحدات</h2>
+        </div>
+        <div class="chalets-container" id="chaletsContainer">
+          <!-- Default chalet card inserted by JS -->
+        </div>
+        <button type="button" class="add-chalet-btn" onclick="addChalet()">
+          <span style="font-size:20px;">+</span>
+          إضافة شاليه
+        </button>
+      </div>
+
+      <!-- Section 4: Visit Times -->
+      <div class="card">
+        <div class="card-header">
+          <div class="section-num">4</div>
+          <h2>أوقات الزيارات</h2>
+        </div>
+        <div class="time-row">
+          <span class="time-label">زيارة نهارية</span>
+          <div class="time-inputs" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+            <span class="time-sep">من</span>
+            <input type="time" id="dayStart" value="08:00">
+            <span class="time-sep">إلى</span>
+            <input type="time" id="dayEnd" value="19:00">
+          </div>
+        </div>
+        <div class="time-row">
+          <span class="time-label">إقامة ليلية</span>
+          <div class="time-inputs" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+            <span class="time-sep">من</span>
+            <input type="time" id="nightStart" value="20:00">
+            <span class="time-sep">إلى</span>
+            <input type="time" id="nightEnd" value="07:00">
+          </div>
+        </div>
+      </div>
+
+      <!-- Section 5: Pricing -->
+      <div class="card">
+        <div class="card-header">
+          <div class="section-num">5</div>
+          <h2>الأسعار</h2>
+        </div>
+        <div class="form-group">
+          <label>تفاصيل الأسعار</label>
+          <textarea id="pricing" rows="5" placeholder="مثال:
+شاليه النخيل — نهارية: 1400 ر.س (عربون 700) — ليلية: 1800 ر.س (عربون 900)
+شاليه العائلي — نهارية: 1600 ر.س (عربون 800) — ليلية: 2000 ر.س (عربون 1000)"></textarea>
+        </div>
+      </div>
+
+      <!-- Section 6: WhatsApp -->
+      <div class="card">
+        <div class="card-header">
+          <div class="section-num">6</div>
+          <h2>رقم واتساب الحجز</h2>
+        </div>
+        <div class="form-group">
+          <label><span class="required">*</span> رقم الواتساب</label>
+          <input type="tel" id="whatsapp" required placeholder="+9665xxxxxxxx" dir="ltr" style="text-align:left;">
+          <div class="field-error" id="err-whatsapp">هذا الحقل مطلوب</div>
+        </div>
+      </div>
+
+      <!-- Section 7: Location -->
+      <div class="card">
+        <div class="card-header">
+          <div class="section-num">7</div>
+          <h2>موقع المنتجع</h2>
+        </div>
+        <div class="form-group">
+          <label>الموقع</label>
+          <input type="text" id="location" placeholder="رابط خرائط قوقل أو العنوان التفصيلي">
+        </div>
+      </div>
+
+      <!-- Section 8: Photos -->
+      <div class="card">
+        <div class="card-header">
+          <div class="section-num">8</div>
+          <h2>صور المنتجع</h2>
+        </div>
+        <div class="info-box">يرجى إرسال الصور التالية بشكل منفصل عبر واتساب:
+&#8226; صورة رئيسية للمنتجع (Hero)
+&#8226; صورة لكل شاليه
+&#8226; 2-4 صور للمعرض</div>
+      </div>
+
+      <!-- Section 9: Cancellation -->
+      <div class="card">
+        <div class="card-header">
+          <div class="section-num">9</div>
+          <h2>سياسة الإلغاء</h2>
+        </div>
+        <div class="form-group">
+          <label>الإلغاء المجاني قبل كم ساعة من موعد الزيارة؟</label>
+          <input type="number" id="cancellation" value="48" min="0" style="max-width:180px;">
+        </div>
+      </div>
+
+      <!-- Section 10: Domain -->
+      <div class="card">
+        <div class="card-header">
+          <div class="section-num">10</div>
+          <h2>الدومين</h2>
+        </div>
+        <div class="form-group">
+          <label>اسم النطاق</label>
+          <input type="text" id="domain" placeholder="example.com (اختياري)" dir="ltr" style="text-align:left;">
+        </div>
+      </div>
+
+      <!-- Section 11: Admin Info -->
+      <div class="card">
+        <div class="card-header">
+          <div class="section-num">11</div>
+          <h2>بيانات المسؤول</h2>
+        </div>
+        <div class="form-group">
+          <label><span class="required">*</span> الاسم الكامل</label>
+          <input type="text" id="adminName" required placeholder="الاسم الكامل">
+          <div class="field-error" id="err-adminName">هذا الحقل مطلوب</div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label><span class="required">*</span> البريد الإلكتروني</label>
+            <input type="email" id="adminEmail" required placeholder="email@example.com" dir="ltr" style="text-align:left;">
+            <div class="field-error" id="err-adminEmail">يرجى إدخال بريد إلكتروني صالح</div>
+          </div>
+          <div class="form-group">
+            <label><span class="required">*</span> رقم الجوال</label>
+            <input type="tel" id="adminPhone" required placeholder="+9665xxxxxxxx" dir="ltr" style="text-align:left;">
+            <div class="field-error" id="err-adminPhone">هذا الحقل مطلوب</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Section 12: Notes -->
+      <div class="card">
+        <div class="card-header">
+          <div class="section-num">12</div>
+          <h2>ملاحظات إضافية</h2>
+        </div>
+        <div class="form-group">
+          <label>ملاحظات</label>
+          <textarea id="notes" rows="4" placeholder="أي متطلبات أو ملاحظات إضافية تودون مشاركتها..."></textarea>
+        </div>
+      </div>
+
+      <!-- Submit -->
+      <div class="card submit-area">
+        <button type="button" class="submit-btn" id="submitBtn" onclick="submitForm()">إرسال الطلب</button>
+        <div class="submit-error" id="submitError"></div>
+      </div>
+
+    </form>
+
+    <!-- Success -->
+    <div class="card success-card" id="successCard">
+      <div class="success-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M20 6L9 17l-5-5"/>
+        </svg>
+      </div>
+      <h2>تم استلام طلبكم بنجاح!</h2>
+      <p>سيتواصل معكم فريق نحل قريبا.</p>
+    </div>
+
+    <!-- Footer -->
+    <div class="page-footer">
+      شكرا لتعاونكم — فريق نحل NahlBooking
+    </div>
+
+  </div>
+
+  <script>
+    /* ── Amenities definition ── */
+    const AMENITIES = [
+      { key: 'wifi',       label: 'واي فاي' },
+      { key: 'pool',       label: 'مسبح' },
+      { key: 'bbq',        label: 'شواء' },
+      { key: 'parking',    label: 'مواقف سيارات' },
+      { key: 'playground', label: 'ألعاب أطفال' },
+      { key: 'jacuzzi',    label: 'جاكوزي' },
+      { key: 'kitchen',    label: 'مطبخ' },
+      { key: 'ac',         label: 'تكييف' },
+    ];
+
+    let chaletCounter = 0;
+
+    /* ── Build a chalet card HTML ── */
+    function buildChaletHTML(num) {
+      const amenitiesHTML = AMENITIES.map(a =>
+        '<label class="amenity-check">' +
+          '<input type="checkbox" value="' + a.key + '">' +
+          '<span>' + a.label + '</span>' +
+        '</label>'
+      ).join('');
+
+      return '' +
+        '<div class="chalet-card" data-chalet-id="' + num + '">' +
+          '<div class="chalet-card-header">' +
+            '<span class="chalet-num">شاليه #' + num + '</span>' +
+            '<button type="button" class="remove-chalet" onclick="removeChalet(this)" title="حذف">&times;</button>' +
+          '</div>' +
+          '<div class="form-row">' +
+            '<div class="form-group">' +
+              '<label>اسم الشاليه بالعربية</label>' +
+              '<input type="text" class="chalet-name-ar" placeholder="مثال: شاليه النخيل">' +
+            '</div>' +
+            '<div class="form-group">' +
+              '<label>اسم الشاليه بالإنجليزية</label>' +
+              '<input type="text" class="chalet-name-en" placeholder="e.g. Palm Chalet" dir="ltr" style="text-align:left;">' +
+            '</div>' +
+          '</div>' +
+          '<div class="form-group">' +
+            '<label>عدد الضيوف الأقصى</label>' +
+            '<input type="number" class="chalet-max-guests" min="1" placeholder="10" style="max-width:180px;">' +
+          '</div>' +
+          '<div class="form-group">' +
+            '<label>وصف مختصر</label>' +
+            '<textarea class="chalet-description" rows="2" placeholder="وصف مختصر عن الشاليه..."></textarea>' +
+          '</div>' +
+          '<span class="amenities-label">المرافق والخدمات</span>' +
+          '<div class="amenities-grid">' +
+            amenitiesHTML +
+          '</div>' +
+        '</div>';
+    }
+
+    /* ── Add chalet ── */
+    function addChalet() {
+      chaletCounter++;
+      var container = document.getElementById('chaletsContainer');
+      var wrapper = document.createElement('div');
+      wrapper.innerHTML = buildChaletHTML(chaletCounter);
+      var card = wrapper.firstChild;
+      container.appendChild(card);
+      // Animate in
+      card.style.animation = 'fadeIn 0.3s ease-out both';
+      updateRemoveButtons();
+    }
+
+    /* ── Remove chalet ── */
+    function removeChalet(btn) {
+      var cards = document.querySelectorAll('.chalet-card');
+      if (cards.length <= 1) return;
+      var card = btn.closest('.chalet-card');
+      card.style.opacity = '0';
+      card.style.transform = 'translateY(-8px)';
+      card.style.transition = 'opacity 0.2s, transform 0.2s';
+      setTimeout(function() {
+        card.remove();
+        renumberChalets();
+        updateRemoveButtons();
+      }, 200);
+    }
+
+    /* ── Renumber chalets ── */
+    function renumberChalets() {
+      var cards = document.querySelectorAll('.chalet-card');
+      cards.forEach(function(card, i) {
+        card.querySelector('.chalet-num').textContent = 'شاليه #' + (i + 1);
+      });
+    }
+
+    /* ── Show/hide remove button ── */
+    function updateRemoveButtons() {
+      var cards = document.querySelectorAll('.chalet-card');
+      cards.forEach(function(card) {
+        var btn = card.querySelector('.remove-chalet');
+        btn.style.display = cards.length <= 1 ? 'none' : 'flex';
+      });
+    }
+
+    /* ── Collect chalets data ── */
+    function collectChalets() {
+      var chalets = [];
+      var cards = document.querySelectorAll('.chalet-card');
+      cards.forEach(function(card) {
+        var nameAr = card.querySelector('.chalet-name-ar').value.trim();
+        var nameEn = card.querySelector('.chalet-name-en').value.trim();
+        var maxGuests = parseInt(card.querySelector('.chalet-max-guests').value) || 0;
+        var description = card.querySelector('.chalet-description').value.trim();
+        var amenities = [];
+        card.querySelectorAll('.amenities-grid input[type="checkbox"]:checked').forEach(function(cb) {
+          amenities.push(cb.value);
+        });
+        chalets.push({
+          nameAr: nameAr,
+          nameEn: nameEn,
+          maxGuests: maxGuests,
+          description: description,
+          amenities: amenities
+        });
+      });
+      return chalets;
+    }
+
+    /* ── Validation helpers ── */
+    function clearErrors() {
+      document.querySelectorAll('.input-error').forEach(function(el) {
+        el.classList.remove('input-error');
+      });
+      document.querySelectorAll('.field-error').forEach(function(el) {
+        el.classList.remove('visible');
+      });
+    }
+
+    function showError(inputId, errorId) {
+      var input = document.getElementById(inputId);
+      var error = document.getElementById(errorId);
+      if (input) input.classList.add('input-error');
+      if (error) error.classList.add('visible');
+    }
+
+    function isValidEmail(email) {
+      return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+    }
+
+    /* ── Submit form ── */
+    async function submitForm() {
+      clearErrors();
+
+      var submitError = document.getElementById('submitError');
+      submitError.classList.remove('visible');
+      submitError.textContent = '';
+
+      var valid = true;
+
+      // Required fields validation
+      var resortNameAr = document.getElementById('resortNameAr').value.trim();
+      if (!resortNameAr) { showError('resortNameAr', 'err-resortNameAr'); valid = false; }
+
+      var resortNameEn = document.getElementById('resortNameEn').value.trim();
+      if (!resortNameEn) { showError('resortNameEn', 'err-resortNameEn'); valid = false; }
+
+      var whatsapp = document.getElementById('whatsapp').value.trim();
+      if (!whatsapp) { showError('whatsapp', 'err-whatsapp'); valid = false; }
+
+      var adminName = document.getElementById('adminName').value.trim();
+      if (!adminName) { showError('adminName', 'err-adminName'); valid = false; }
+
+      var adminEmail = document.getElementById('adminEmail').value.trim();
+      if (!adminEmail || !isValidEmail(adminEmail)) { showError('adminEmail', 'err-adminEmail'); valid = false; }
+
+      var adminPhone = document.getElementById('adminPhone').value.trim();
+      if (!adminPhone) { showError('adminPhone', 'err-adminPhone'); valid = false; }
+
+      if (!valid) {
+        // Scroll to first error
+        var firstErr = document.querySelector('.input-error');
+        if (firstErr) {
+          firstErr.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+        return;
+      }
+
+      var payload = {
+        resortNameAr: resortNameAr,
+        resortNameEn: resortNameEn,
+        chalets: collectChalets(),
+        dayVisitStart: document.getElementById('dayStart').value,
+        dayVisitEnd: document.getElementById('dayEnd').value,
+        overnightStart: document.getElementById('nightStart').value,
+        overnightEnd: document.getElementById('nightEnd').value,
+        pricing: document.getElementById('pricing').value.trim(),
+        whatsappNumber: whatsapp,
+        location: document.getElementById('location').value.trim(),
+        cancellationHrs: parseInt(document.getElementById('cancellation').value) || 48,
+        domain: document.getElementById('domain').value.trim(),
+        adminName: adminName,
+        adminEmail: adminEmail,
+        adminPhone: adminPhone,
+        notes: document.getElementById('notes').value.trim(),
+      };
+
+      var submitBtn = document.getElementById('submitBtn');
+      var originalText = submitBtn.textContent;
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = 'جاري الإرسال...<span class="spinner"></span>';
+
+      try {
+        var response = await fetch('/api/onboarding', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+
+        if (!response.ok) {
+          var errData = {};
+          try { errData = await response.json(); } catch(e) {}
+          throw new Error(errData.message || 'حدث خطأ أثناء إرسال الطلب');
+        }
+
+        // Success
+        document.getElementById('onboardingForm').style.display = 'none';
+        var successCard = document.getElementById('successCard');
+        successCard.classList.add('visible');
+        successCard.style.animation = 'fadeIn 0.5s ease-out both';
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+
+      } catch (err) {
+        submitError.textContent = err.message || 'حدث خطأ غير متوقع. يرجى المحاولة مرة أخرى.';
+        submitError.classList.add('visible');
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = originalText;
+      }
+    }
+
+    /* ── Clear error on input ── */
+    document.addEventListener('input', function(e) {
+      var input = e.target;
+      if (input.classList.contains('input-error')) {
+        input.classList.remove('input-error');
+        var errEl = input.parentElement.querySelector('.field-error');
+        if (errEl) errEl.classList.remove('visible');
+      }
+    });
+
+    /* ── Init: add first chalet ── */
+    addChalet();
+  </script>
+
+</body>
+</html>

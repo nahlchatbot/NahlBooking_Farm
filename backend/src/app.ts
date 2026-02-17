@@ -101,6 +101,11 @@ if (config.isProduction) {
     res.sendFile(path.join(frontendPath, 'booking.html'));
   });
 
+  // Serve onboarding form page
+  app.get('/onboarding', (req, res) => {
+    res.sendFile(path.join(frontendPath, 'onboarding.html'));
+  });
+
   // Fallback to index.html for frontend routes
   app.get('*', (req, res, next) => {
     // Skip API routes and admin routes

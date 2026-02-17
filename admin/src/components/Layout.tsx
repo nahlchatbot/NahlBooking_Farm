@@ -19,6 +19,7 @@ import {
   Clock,
   AlertCircle,
   RefreshCw,
+  FileText,
 } from 'lucide-react';
 import { useState, Component, ErrorInfo, ReactNode } from 'react';
 
@@ -96,6 +97,7 @@ const navItems: NavItem[] = [
   { path: '/reports', icon: BarChart2, label: 'sidebar.reports' },
   { path: '/users', icon: Users, label: 'sidebar.users', requireSuperAdmin: true },
   { path: '/audit-log', icon: Shield, label: 'sidebar.auditLog', requireSuperAdmin: true },
+  { path: '/onboarding', icon: FileText, label: 'sidebar.onboarding' },
   { path: '/settings', icon: Settings, label: 'sidebar.settings' },
 ];
 

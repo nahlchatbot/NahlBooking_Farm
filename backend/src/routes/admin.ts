@@ -3,6 +3,7 @@ import { authenticateAdmin } from '../middleware/auth.js';
 import { requireSuperAdmin, requireAdmin } from '../middleware/rbac.js';
 import { validate } from '../middleware/validation.js';
 import { loginLimiter } from '../middleware/rateLimiter.js';
+import prisma from '../config/database.js';
 import {
   adminLoginSchema,
   updateBookingSchema,
@@ -160,5 +161,49 @@ router.post('/users', requireSuperAdmin, validate(createAdminUserSchema), create
 router.patch('/users/:id', requireSuperAdmin, validate(updateAdminUserSchema), updateAdminUserHandler);
 router.delete('/users/:id', requireSuperAdmin, deleteAdminUserHandler);
 router.post('/users/:id/change-password', requireSuperAdmin, validate(changePasswordSchema), changePasswordHandler);
+
+// Onboarding Submissions
+router.get('/onboarding', async (req, res) => {
+  try {
+    const submissions = await prisma.onboardingSubmission.findMany({
+      orderBy: { createdAt: 'desc' },
+    });
+    res.json({ ok: true, data: submissions });
+  } catch {
+    res.status(500).json({ ok: false, message: 'Failed to load submissions' });
+  }
+});
+
+router.get('/onboarding/:id', async (req, res) => {
+  try {
+    const submission = await prisma.onboardingSubmission.findUnique({
+      where: { id: req.params.id },
+    });
+    if (!submission) {
+      res.status(404).json({ ok: false, message: 'Not found' });
+      return;
+    }
+    res.json({ ok: true, data: submission });
+  } catch {
+    res.status(500).json({ ok: false, message: 'Failed to load submission' });
+  }
+});
+
+router.patch('/onboarding/:id', requireAdmin, async (req, res) => {
+  try {
+    const { status } = req.body;
+    if (!['NEW', 'IN_PROGRESS', 'COMPLETED'].includes(status)) {
+      res.status(400).json({ ok: false, message: 'Invalid status' });
+      return;
+    }
+    const submission = await prisma.onboardingSubmission.update({
+      where: { id: req.params.id },
+      data: { status },
+    });
+    res.json({ ok: true, data: submission });
+  } catch {
+    res.status(500).json({ ok: false, message: 'Failed to update submission' });
+  }
+});
 
 export default router;

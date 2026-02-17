@@ -111,6 +111,32 @@ export const changePasswordSchema = z.object({
   newPassword: z.string().min(8, 'Password must be at least 8 characters'),
 });
 
+// Onboarding submission schema
+export const onboardingSchema = z.object({
+  resortNameAr: z.string().min(2).max(100),
+  resortNameEn: z.string().min(2).max(100),
+  chalets: z.array(z.object({
+    nameAr: z.string().min(1),
+    nameEn: z.string().min(1),
+    maxGuests: z.coerce.number().int().min(1).max(50),
+    description: z.string().max(500).optional().default(''),
+    amenities: z.array(z.string()).optional().default([]),
+  })).min(1),
+  dayVisitStart: z.string().optional(),
+  dayVisitEnd: z.string().optional(),
+  overnightStart: z.string().optional(),
+  overnightEnd: z.string().optional(),
+  pricing: z.string().max(2000).optional(),
+  whatsappNumber: z.string().min(10).max(20),
+  location: z.string().max(500).optional(),
+  cancellationHrs: z.coerce.number().int().min(0).max(168).optional(),
+  domain: z.string().max(200).optional(),
+  adminName: z.string().min(2).max(100),
+  adminEmail: z.string().email(),
+  adminPhone: z.string().min(10).max(20),
+  notes: z.string().max(2000).optional(),
+});
+
 // Type exports
 export type AvailabilityInput = z.infer<typeof availabilitySchema>;
 export type CreateBookingInput = z.infer<typeof createBookingSchema>;
