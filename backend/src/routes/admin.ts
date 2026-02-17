@@ -206,4 +206,15 @@ router.patch('/onboarding/:id', requireAdmin, async (req, res) => {
   }
 });
 
+router.delete('/onboarding/:id', requireAdmin, async (req, res) => {
+  try {
+    await prisma.onboardingSubmission.delete({
+      where: { id: req.params.id },
+    });
+    res.json({ ok: true, message: 'تم حذف الطلب بنجاح' });
+  } catch {
+    res.status(500).json({ ok: false, message: 'Failed to delete submission' });
+  }
+});
+
 export default router;

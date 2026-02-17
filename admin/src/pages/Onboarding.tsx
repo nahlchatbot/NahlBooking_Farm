@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '../api/client';
-import { FileText, Eye, AlertCircle, Clock, MapPin, Phone, Globe, User, Hash, Download } from 'lucide-react';
+import { FileText, Eye, AlertCircle, Clock, MapPin, Phone, Globe, User, Hash, Download, Trash2 } from 'lucide-react';
 import { Card, CardContent } from '../components/ui/Card';
 import { Badge } from '../components/ui/Badge';
 import { Button } from '../components/ui/Button';
@@ -10,6 +10,7 @@ import { Select } from '../components/ui/Select';
 import { Modal, ModalFooter } from '../components/ui/Modal';
 import { SkeletonCard } from '../components/ui/Skeleton';
 import { EmptyState } from '../components/ui/EmptyState';
+import { ConfirmDialog } from '../components/ui/ConfirmDialog';
 import toast from 'react-hot-toast';
 
 // --- Types ---
@@ -57,6 +58,10 @@ const onboardingApi = {
   },
   updateStatus: async (id: string, status: string) => {
     const res = await apiClient.patch(`/admin/onboarding/${id}`, { status });
+    return res.data;
+  },
+  delete: async (id: string) => {
+    const res = await apiClient.delete(`/admin/onboarding/${id}`);
     return res.data;
   },
 };
@@ -130,6 +135,7 @@ export default function Onboarding() {
 
   const [selectedSubmission, setSelectedSubmission] = useState<OnboardingSubmission | null>(null);
   const [editStatus, setEditStatus] = useState<string>('');
+  const [deleteTarget, setDeleteTarget] = useState<OnboardingSubmission | null>(null);
 
   const { data, isLoading, error } = useQuery({
     queryKey: ['onboarding'],
@@ -146,6 +152,19 @@ export default function Onboarding() {
     },
     onError: () => {
       toast.error(isRTL ? 'فشل في تحديث الحالة' : 'Failed to update status');
+    },
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: (id: string) => onboardingApi.delete(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['onboarding'] });
+      toast.success(isRTL ? 'تم حذف الطلب بنجاح' : 'Submission deleted successfully');
+      setDeleteTarget(null);
+      setSelectedSubmission(null);
+    },
+    onError: () => {
+      toast.error(isRTL ? 'فشل في حذف الطلب' : 'Failed to delete submission');
     },
   });
 
@@ -293,7 +312,7 @@ export default function Onboarding() {
                             )}
                           </td>
                           <td className="py-3 px-4">
-                            <div onClick={(e) => e.stopPropagation()}>
+                            <div onClick={(e) => e.stopPropagation()} className="flex items-center gap-1">
                               <Button
                                 variant="ghost"
                                 size="sm"
@@ -302,6 +321,14 @@ export default function Onboarding() {
                               >
                                 <Eye size={16} />
                                 {isRTL ? 'عرض' : 'View'}
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => setDeleteTarget(submission)}
+                                className="text-red-500 hover:bg-red-50"
+                              >
+                                <Trash2 size={16} />
                               </Button>
                             </div>
                           </td>
@@ -619,36 +646,64 @@ export default function Onboarding() {
 
             {/* Status Update */}
             <ModalFooter>
-              <div className="flex items-center gap-3 w-full">
-                <div className="w-48">
-                  <Select
-                    label={isRTL ? 'الحالة' : 'Status'}
-                    value={editStatus}
-                    onChange={(e) => setEditStatus(e.target.value)}
-                    options={statusOptions(isRTL)}
-                  />
-                </div>
-                <div className="flex items-center gap-2 mt-auto pt-6">
-                  <Button
-                    variant="secondary"
-                    onClick={() => setSelectedSubmission(null)}
-                    disabled={updateStatusMutation.isPending}
-                  >
-                    {isRTL ? 'إغلاق' : 'Close'}
-                  </Button>
-                  <Button
-                    onClick={handleSaveStatus}
-                    loading={updateStatusMutation.isPending}
-                    disabled={updateStatusMutation.isPending}
-                  >
-                    {isRTL ? 'حفظ' : 'Save'}
-                  </Button>
+              <div className="flex items-center justify-between w-full">
+                <Button
+                  variant="danger"
+                  size="sm"
+                  onClick={() => setDeleteTarget(selectedSubmission)}
+                  className="mt-auto pt-0"
+                >
+                  <Trash2 size={14} />
+                  {isRTL ? 'حذف الطلب' : 'Delete'}
+                </Button>
+                <div className="flex items-center gap-3">
+                  <div className="w-48">
+                    <Select
+                      label={isRTL ? 'الحالة' : 'Status'}
+                      value={editStatus}
+                      onChange={(e) => setEditStatus(e.target.value)}
+                      options={statusOptions(isRTL)}
+                    />
+                  </div>
+                  <div className="flex items-center gap-2 mt-auto pt-6">
+                    <Button
+                      variant="secondary"
+                      onClick={() => setSelectedSubmission(null)}
+                      disabled={updateStatusMutation.isPending}
+                    >
+                      {isRTL ? 'إغلاق' : 'Close'}
+                    </Button>
+                    <Button
+                      onClick={handleSaveStatus}
+                      loading={updateStatusMutation.isPending}
+                      disabled={updateStatusMutation.isPending}
+                    >
+                      {isRTL ? 'حفظ' : 'Save'}
+                    </Button>
+                  </div>
                 </div>
               </div>
             </ModalFooter>
           </div>
         )}
       </Modal>
+
+      {/* Delete Confirmation */}
+      <ConfirmDialog
+        open={!!deleteTarget}
+        onClose={() => setDeleteTarget(null)}
+        onConfirm={() => deleteTarget && deleteMutation.mutate(deleteTarget.id)}
+        title={isRTL ? 'حذف الطلب' : 'Delete Submission'}
+        description={
+          isRTL
+            ? `هل أنت متأكد من حذف طلب "${deleteTarget?.resortNameEn || deleteTarget?.resortNameAr}"؟ لا يمكن التراجع عن هذا الإجراء.`
+            : `Are you sure you want to delete the submission for "${deleteTarget?.resortNameEn || deleteTarget?.resortNameAr}"? This action cannot be undone.`
+        }
+        confirmLabel={isRTL ? 'حذف' : 'Delete'}
+        cancelLabel={isRTL ? 'إلغاء' : 'Cancel'}
+        variant="danger"
+        loading={deleteMutation.isPending}
+      />
     </div>
   );
 }
