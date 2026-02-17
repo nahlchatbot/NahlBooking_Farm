@@ -164,8 +164,8 @@ export default function Onboarding() {
     <div className="space-y-6">
       {/* Page Header */}
       <div className="flex items-center gap-3">
-        <div className="p-2 bg-green-100 rounded-lg">
-          <FileText className="text-green-600" size={24} />
+        <div className="p-2 bg-primary-100 rounded-lg">
+          <FileText className="text-primary-600" size={24} />
         </div>
         <div>
           <h1 className="text-2xl font-bold text-gray-800">

@@ -138,11 +138,14 @@ export default function Layout() {
       >
         <div className="flex flex-col h-full">
           {/* Logo */}
-          <div className="p-6 border-b">
-            <h1 className="text-xl font-bold text-primary-700">
-              {t('common.appName')}
-            </h1>
-            <p className="text-sm text-gray-500">{t('common.dashboard')}</p>
+          <div className="p-4 border-b flex items-center gap-3">
+            <img src="/admin/nahl-logo.png" alt="Nahl" className="w-10 h-10 object-contain" />
+            <div>
+              <h1 className="text-lg font-bold text-primary-700">
+                {t('common.appName')}
+              </h1>
+              <p className="text-xs text-gray-500">{t('common.dashboard')}</p>
+            </div>
           </div>
 
           {/* Navigation */}
