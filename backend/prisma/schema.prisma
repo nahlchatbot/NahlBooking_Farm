@@ -260,6 +260,9 @@ model OnboardingSubmission {
   adminEmail      String
   adminPhone      String
   notes           String?
+  logoUrl         String?
+  heroImageUrl    String?
+  galleryUrls     String[] @default([])
   status          String   @default("NEW")
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt

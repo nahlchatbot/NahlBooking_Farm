@@ -121,6 +121,7 @@ export const onboardingSchema = z.object({
     maxGuests: z.coerce.number().int().min(1).max(50),
     description: z.string().max(500).optional().default(''),
     amenities: z.array(z.string()).optional().default([]),
+    imageUrl: z.string().url().optional(),
   })).min(1),
   dayVisitStart: z.string().optional(),
   dayVisitEnd: z.string().optional(),
@@ -135,6 +136,9 @@ export const onboardingSchema = z.object({
   adminEmail: z.string().email(),
   adminPhone: z.string().min(10).max(20),
   notes: z.string().max(2000).optional(),
+  logoUrl: z.string().url().optional(),
+  heroImageUrl: z.string().url().optional(),
+  galleryUrls: z.array(z.string().url()).max(10).optional().default([]),
 });
 
 // Type exports

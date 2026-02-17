@@ -9,11 +9,11 @@
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
   <style>
     :root {
-      --green: #1f7a55;
-      --green-light: #e8f5ee;
-      --green-dark: #165a3e;
-      --gold: #d6b25e;
-      --gold-light: #fefce8;
+      --primary: #f5a623;
+      --primary-light: #fef7e8;
+      --primary-dark: #e8950e;
+      --accent: #ffd500;
+      --accent-light: #fffbeb;
       --bg: #f6f4ef;
       --white: #ffffff;
       --text: #1e293b;
@@ -55,7 +55,7 @@
     .page-header h1 {
       font-size: 28px;
       font-weight: 800;
-      color: var(--green);
+      color: var(--primary);
       margin-bottom: 8px;
     }
 
@@ -85,7 +85,7 @@
     .section-num {
       width: 36px;
       height: 36px;
-      background: var(--green);
+      background: var(--primary);
       color: var(--white);
       border-radius: 10px;
       display: flex;
@@ -153,8 +153,8 @@
     input:focus,
     textarea:focus,
     select:focus {
-      border-color: var(--green);
-      box-shadow: 0 0 0 3px rgba(31,122,85,0.1);
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(245,166,35,0.1);
     }
 
     input.input-error,
@@ -186,8 +186,8 @@
 
     /* Info box */
     .info-box {
-      background: var(--gold-light);
-      border-right: 3px solid var(--gold);
+      background: var(--accent-light);
+      border-right: 3px solid var(--accent);
       border-radius: 8px;
       padding: 16px 18px;
       font-size: 14px;
@@ -195,6 +195,52 @@
       line-height: 1.8;
       white-space: pre-line;
     }
+
+    /* Upload drop zone */
+    .upload-zone {
+      border: 2px dashed var(--border);
+      border-radius: 10px;
+      padding: 24px;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color 0.2s, background 0.2s;
+      background: #fafafa;
+    }
+    .upload-zone:hover, .upload-zone.drag-over {
+      border-color: var(--primary);
+      background: var(--primary-light);
+    }
+    .upload-zone-icon { font-size: 32px; color: var(--text-secondary); margin-bottom: 8px; }
+    .upload-zone-text { font-size: 14px; color: var(--text-secondary); margin-bottom: 4px; }
+    .upload-zone-hint { font-size: 12px; color: #94a3b8; }
+    .upload-zone input[type="file"] { display: none; }
+    .upload-previews { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 14px; }
+    .upload-preview {
+      position: relative; width: 100px; height: 100px;
+      border-radius: 8px; overflow: hidden;
+      border: 1px solid var(--border); background: #f8f8f8;
+    }
+    .upload-preview img { width: 100%; height: 100%; object-fit: cover; }
+    .upload-preview .remove-upload {
+      position: absolute; top: 4px; right: 4px;
+      width: 22px; height: 22px;
+      background: rgba(220,38,38,0.9); color: white;
+      border: none; border-radius: 50%; cursor: pointer;
+      font-size: 14px; display: flex; align-items: center;
+      justify-content: center; line-height: 1;
+      opacity: 0; transition: opacity 0.2s;
+    }
+    .upload-preview:hover .remove-upload { opacity: 1; }
+    .upload-preview.single { width: 120px; height: 120px; }
+    .upload-progress {
+      position: absolute; bottom: 0; left: 0; right: 0;
+      height: 4px; background: rgba(0,0,0,0.1);
+    }
+    .upload-progress-bar {
+      height: 100%; background: var(--primary);
+      transition: width 0.2s; border-radius: 0 0 8px 8px;
+    }
+    .upload-error { font-size: 13px; color: var(--error); margin-top: 6px; }
 
     /* Visit times */
     .time-row {
@@ -251,7 +297,7 @@
     .chalet-num {
       font-size: 15px;
       font-weight: 700;
-      color: var(--green);
+      color: var(--primary);
     }
 
     .remove-chalet {
@@ -307,11 +353,11 @@
     }
 
     .amenity-check:hover {
-      border-color: var(--green);
+      border-color: var(--primary);
     }
 
     .amenity-check input[type="checkbox"] {
-      accent-color: var(--green);
+      accent-color: var(--primary);
       width: 16px;
       height: 16px;
       cursor: pointer;
@@ -319,7 +365,7 @@
     }
 
     .amenity-check input[type="checkbox"]:checked + span {
-      color: var(--green);
+      color: var(--primary);
       font-weight: 600;
     }
 
@@ -327,9 +373,9 @@
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      background: var(--green-light);
-      color: var(--green);
-      border: 1px dashed var(--green);
+      background: var(--primary-light);
+      color: var(--primary);
+      border: 1px dashed var(--primary);
       border-radius: 10px;
       padding: 12px 24px;
       font-size: 15px;
@@ -341,7 +387,7 @@
     }
 
     .add-chalet-btn:hover {
-      background: #d1fae5;
+      background: #fde9c4;
       transform: translateY(-1px);
     }
 
@@ -352,7 +398,7 @@
     }
 
     .submit-btn {
-      background: var(--green);
+      background: var(--primary);
       color: var(--white);
       border: none;
       border-radius: 10px;
@@ -362,13 +408,13 @@
       font-family: 'Cairo', sans-serif;
       cursor: pointer;
       transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
-      box-shadow: 0 2px 8px rgba(31,122,85,0.25);
+      box-shadow: 0 2px 8px rgba(245,166,35,0.25);
     }
 
     .submit-btn:hover {
-      background: var(--green-dark);
+      background: var(--primary-dark);
       transform: translateY(-1px);
-      box-shadow: 0 4px 16px rgba(31,122,85,0.3);
+      box-shadow: 0 4px 16px rgba(245,166,35,0.3);
     }
 
     .submit-btn:active {
@@ -406,7 +452,7 @@
     .success-icon {
       width: 80px;
       height: 80px;
-      background: var(--green-light);
+      background: var(--primary-light);
       border-radius: 50%;
       display: flex;
       align-items: center;
@@ -417,13 +463,13 @@
     .success-icon svg {
       width: 40px;
       height: 40px;
-      color: var(--green);
+      color: var(--primary);
     }
 
     .success-card h2 {
       font-size: 22px;
       font-weight: 700;
-      color: var(--green);
+      color: var(--primary);
       margin-bottom: 12px;
     }
 
@@ -436,7 +482,7 @@
     .page-footer {
       text-align: center;
       padding: 32px 0 16px;
-      color: var(--text-secondary);
+      color: var(--primary);
       font-size: 14px;
     }
 
@@ -548,6 +594,7 @@
 
     <!-- Header -->
     <div class="page-header">
+      <img src="/images/nahl-logo.png" alt="NahlBooking" style="width:64px;height:auto;margin:0 auto 12px;display:block;">
       <h1>طلب المتطلبات — NahlBooking</h1>
       <p>لتجهيز نظام الحجز الخاص بكم، نحتاج إلى المعلومات التالية</p>
     </div>
@@ -581,7 +628,14 @@
           <div class="section-num">2</div>
           <h2>الشعار</h2>
         </div>
-        <div class="info-box">يرجى إرسال الشعار بصيغة PNG بدقة عالية بشكل منفصل عبر واتساب</div>
+        <div class="upload-zone" id="logoUploadZone" onclick="document.getElementById('logoInput').click()">
+          <input type="file" id="logoInput" accept="image/png,image/jpeg,image/svg+xml,image/webp" onchange="handleLogoUpload(this)">
+          <div class="upload-zone-icon">📷</div>
+          <div class="upload-zone-text">اضغط أو اسحب الشعار هنا</div>
+          <div class="upload-zone-hint">PNG, JPG, SVG — بحد أقصى 10 ميجابايت</div>
+        </div>
+        <div class="upload-previews" id="logoPreviews"></div>
+        <div class="upload-error" id="logoError"></div>
       </div>
 
       <!-- Section 3: Chalets -->
@@ -670,10 +724,28 @@
           <div class="section-num">8</div>
           <h2>صور المنتجع</h2>
         </div>
-        <div class="info-box">يرجى إرسال الصور التالية بشكل منفصل عبر واتساب:
-&#8226; صورة رئيسية للمنتجع (Hero)
-&#8226; صورة لكل شاليه
-&#8226; 2-4 صور للمعرض</div>
+        <div class="form-group">
+          <label>صورة رئيسية (Hero)</label>
+          <div class="upload-zone" id="heroUploadZone" onclick="document.getElementById('heroInput').click()">
+            <input type="file" id="heroInput" accept="image/png,image/jpeg,image/webp" onchange="handleHeroUpload(this)">
+            <div class="upload-zone-icon">🏞️</div>
+            <div class="upload-zone-text">اضغط أو اسحب الصورة الرئيسية هنا</div>
+            <div class="upload-zone-hint">PNG, JPG — بحد أقصى 10 ميجابايت</div>
+          </div>
+          <div class="upload-previews" id="heroPreviews"></div>
+          <div class="upload-error" id="heroError"></div>
+        </div>
+        <div class="form-group" style="margin-top:18px;">
+          <label>صور المعرض (2-10 صور)</label>
+          <div class="upload-zone" id="galleryUploadZone" onclick="document.getElementById('galleryInput').click()">
+            <input type="file" id="galleryInput" accept="image/png,image/jpeg,image/webp" multiple onchange="handleGalleryUpload(this)">
+            <div class="upload-zone-icon">📸</div>
+            <div class="upload-zone-text">اضغط أو اسحب صور المعرض هنا</div>
+            <div class="upload-zone-hint">PNG, JPG — بحد أقصى 10 صور، 10 ميجابايت لكل صورة</div>
+          </div>
+          <div class="upload-previews" id="galleryPreviews"></div>
+          <div class="upload-error" id="galleryError"></div>
+        </div>
       </div>
 
       <!-- Section 9: Cancellation -->
@@ -778,6 +850,128 @@
 
     let chaletCounter = 0;
 
+    /* ── Cloudinary Upload ── */
+    var CLOUD_NAME = '';
+    var UPLOAD_PRESET = '';
+
+    async function loadConfig() {
+      try {
+        var res = await fetch('/api/config');
+        var data = await res.json();
+        if (data.ok) {
+          CLOUD_NAME = data.data.cloudinaryCloudName;
+          UPLOAD_PRESET = data.data.cloudinaryUploadPreset;
+        }
+      } catch (e) { console.warn('Config load failed:', e); }
+    }
+    loadConfig();
+
+    var uploadState = { logoUrl: null, heroImageUrl: null, galleryUrls: [], chaletImageUrls: {} };
+    var activeUploads = 0;
+
+    function uploadToCloudinaryWithProgress(file, folder, previewEl) {
+      return new Promise(function(resolve, reject) {
+        if (!CLOUD_NAME || !UPLOAD_PRESET) { reject(new Error('لم يتم تحميل إعدادات الرفع')); return; }
+        if (file.size > 10 * 1024 * 1024) { reject(new Error('حجم الملف يتجاوز 10 ميجابايت')); return; }
+        var allowed = ['image/png','image/jpeg','image/jpg','image/webp','image/svg+xml'];
+        if (!allowed.includes(file.type)) { reject(new Error('صيغة الملف غير مدعومة')); return; }
+        activeUploads++;
+        var fd = new FormData();
+        fd.append('file', file);
+        fd.append('upload_preset', UPLOAD_PRESET);
+        fd.append('folder', 'onboarding/' + folder);
+        var xhr = new XMLHttpRequest();
+        xhr.open('POST', 'https://api.cloudinary.com/v1_1/' + CLOUD_NAME + '/image/upload');
+        xhr.upload.onprogress = function(e) {
+          if (e.lengthComputable) {
+            var bar = previewEl.querySelector('.upload-progress-bar');
+            if (bar) bar.style.width = Math.round((e.loaded / e.total) * 100) + '%';
+          }
+        };
+        xhr.onload = function() {
+          activeUploads--;
+          if (xhr.status === 200) {
+            var d = JSON.parse(xhr.responseText);
+            resolve({ url: d.secure_url, publicId: d.public_id });
+          } else { reject(new Error('فشل رفع الصورة')); }
+        };
+        xhr.onerror = function() { activeUploads--; reject(new Error('خطأ في الاتصال')); };
+        xhr.send(fd);
+      });
+    }
+
+    function createProgressPreview() {
+      var div = document.createElement('div');
+      div.className = 'upload-preview';
+      div.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#94a3b8;font-size:12px;">جاري الرفع...</div>' +
+        '<div class="upload-progress"><div class="upload-progress-bar" style="width:0%"></div></div>';
+      return div;
+    }
+
+    function createPreviewElement(url, onRemove) {
+      var div = document.createElement('div');
+      div.className = 'upload-preview';
+      div.innerHTML = '<img src="' + url + '" alt="">' +
+        '<button type="button" class="remove-upload" title="حذف">&times;</button>';
+      div.querySelector('.remove-upload').addEventListener('click', function() { div.remove(); if (onRemove) onRemove(); });
+      return div;
+    }
+
+    async function handleLogoUpload(input) {
+      var file = input.files[0]; if (!file) return; input.value = '';
+      var err = document.getElementById('logoError'); err.textContent = '';
+      var prev = document.getElementById('logoPreviews'); prev.innerHTML = '';
+      var p = createProgressPreview(); p.classList.add('single'); prev.appendChild(p);
+      try {
+        var r = await uploadToCloudinaryWithProgress(file, 'logos', p);
+        uploadState.logoUrl = r.url; prev.innerHTML = '';
+        var el = createPreviewElement(r.url, function() { uploadState.logoUrl = null; });
+        el.classList.add('single'); prev.appendChild(el);
+      } catch (e) { prev.innerHTML = ''; err.textContent = e.message; }
+    }
+
+    async function handleHeroUpload(input) {
+      var file = input.files[0]; if (!file) return; input.value = '';
+      var err = document.getElementById('heroError'); err.textContent = '';
+      var prev = document.getElementById('heroPreviews'); prev.innerHTML = '';
+      var p = createProgressPreview(); prev.appendChild(p);
+      try {
+        var r = await uploadToCloudinaryWithProgress(file, 'hero', p);
+        uploadState.heroImageUrl = r.url; prev.innerHTML = '';
+        prev.appendChild(createPreviewElement(r.url, function() { uploadState.heroImageUrl = null; }));
+      } catch (e) { prev.innerHTML = ''; err.textContent = e.message; }
+    }
+
+    async function handleGalleryUpload(input) {
+      var files = Array.from(input.files); if (!files.length) return; input.value = '';
+      var err = document.getElementById('galleryError'); err.textContent = '';
+      var prev = document.getElementById('galleryPreviews');
+      if (uploadState.galleryUrls.length + files.length > 10) { err.textContent = 'الحد الأقصى 10 صور'; return; }
+      files.forEach(function(file) {
+        var p = createProgressPreview(); prev.appendChild(p);
+        uploadToCloudinaryWithProgress(file, 'gallery', p).then(function(r) {
+          uploadState.galleryUrls.push(r.url); p.remove();
+          prev.appendChild(createPreviewElement(r.url, function() {
+            var i = uploadState.galleryUrls.indexOf(r.url);
+            if (i > -1) uploadState.galleryUrls.splice(i, 1);
+          }));
+        }).catch(function(e) { p.remove(); err.textContent = e.message; });
+      });
+    }
+
+    async function handleChaletImageUpload(input, chaletNum) {
+      var file = input.files[0]; if (!file) return; input.value = '';
+      var card = input.closest('.chalet-card');
+      var err = card.querySelector('.chalet-image-error'); err.textContent = '';
+      var prev = card.querySelector('.chalet-image-previews'); prev.innerHTML = '';
+      var p = createProgressPreview(); prev.appendChild(p);
+      try {
+        var r = await uploadToCloudinaryWithProgress(file, 'chalets', p);
+        uploadState.chaletImageUrls[chaletNum] = r.url; prev.innerHTML = '';
+        prev.appendChild(createPreviewElement(r.url, function() { delete uploadState.chaletImageUrls[chaletNum]; }));
+      } catch (e) { prev.innerHTML = ''; err.textContent = e.message; }
+    }
+
     /* ── Build a chalet card HTML ── */
     function buildChaletHTML(num) {
       const amenitiesHTML = AMENITIES.map(a =>
@@ -811,6 +1005,17 @@
             '<label>وصف مختصر</label>' +
             '<textarea class="chalet-description" rows="2" placeholder="وصف مختصر عن الشاليه..."></textarea>' +
           '</div>' +
+          '<div class="form-group">' +
+            '<label>صورة الشاليه</label>' +
+            '<div class="upload-zone chalet-upload-zone" onclick="this.querySelector(\'input\').click()">' +
+              '<input type="file" accept="image/png,image/jpeg,image/webp" onchange="handleChaletImageUpload(this, ' + num + ')">' +
+              '<div class="upload-zone-icon">🏠</div>' +
+              '<div class="upload-zone-text">اضغط لإضافة صورة الشاليه</div>' +
+              '<div class="upload-zone-hint">PNG, JPG — بحد أقصى 10 ميجابايت</div>' +
+            '</div>' +
+            '<div class="upload-previews chalet-image-previews"></div>' +
+            '<div class="upload-error chalet-image-error"></div>' +
+          '</div>' +
           '<span class="amenities-label">المرافق والخدمات</span>' +
           '<div class="amenities-grid">' +
             amenitiesHTML +
@@ -828,6 +1033,17 @@
       container.appendChild(card);
       // Animate in
       card.style.animation = 'fadeIn 0.3s ease-out both';
+      // Set up drag-and-drop for chalet upload zone
+      var chaletZone = card.querySelector('.chalet-upload-zone');
+      if (chaletZone) {
+        chaletZone.addEventListener('dragover', function(e) { e.preventDefault(); chaletZone.classList.add('drag-over'); });
+        chaletZone.addEventListener('dragleave', function() { chaletZone.classList.remove('drag-over'); });
+        chaletZone.addEventListener('drop', function(e) {
+          e.preventDefault(); chaletZone.classList.remove('drag-over');
+          var inp = chaletZone.querySelector('input[type="file"]');
+          if (e.dataTransfer.files.length) { inp.files = e.dataTransfer.files; inp.dispatchEvent(new Event('change')); }
+        });
+      }
       updateRemoveButtons();
     }
 
@@ -876,12 +1092,15 @@
         card.querySelectorAll('.amenities-grid input[type="checkbox"]:checked').forEach(function(cb) {
           amenities.push(cb.value);
         });
+        var chaletId = card.getAttribute('data-chalet-id');
+        var imageUrl = uploadState.chaletImageUrls[chaletId] || undefined;
         chalets.push({
           nameAr: nameAr,
           nameEn: nameEn,
           maxGuests: maxGuests,
           description: description,
-          amenities: amenities
+          amenities: amenities,
+          imageUrl: imageUrl,
         });
       });
       return chalets;
@@ -915,6 +1134,12 @@
       var submitError = document.getElementById('submitError');
       submitError.classList.remove('visible');
       submitError.textContent = '';
+
+      if (activeUploads > 0) {
+        submitError.textContent = 'يرجى الانتظار حتى اكتمال رفع الصور';
+        submitError.classList.add('visible');
+        return;
+      }
 
       var valid = true;
 
@@ -963,6 +1188,9 @@
         adminEmail: adminEmail,
         adminPhone: adminPhone,
         notes: document.getElementById('notes').value.trim(),
+        logoUrl: uploadState.logoUrl || undefined,
+        heroImageUrl: uploadState.heroImageUrl || undefined,
+        galleryUrls: uploadState.galleryUrls.length > 0 ? uploadState.galleryUrls : undefined,
       };
 
       var submitBtn = document.getElementById('submitBtn');
@@ -1011,6 +1239,19 @@
 
     /* ── Init: add first chalet ── */
     addChalet();
+
+    /* ── Drag and drop for static zones ── */
+    ['logoUploadZone', 'heroUploadZone', 'galleryUploadZone'].forEach(function(id) {
+      var zone = document.getElementById(id);
+      if (!zone) return;
+      zone.addEventListener('dragover', function(e) { e.preventDefault(); zone.classList.add('drag-over'); });
+      zone.addEventListener('dragleave', function() { zone.classList.remove('drag-over'); });
+      zone.addEventListener('drop', function(e) {
+        e.preventDefault(); zone.classList.remove('drag-over');
+        var inp = zone.querySelector('input[type="file"]');
+        if (e.dataTransfer.files.length) { inp.files = e.dataTransfer.files; inp.dispatchEvent(new Event('change')); }
+      });
+    });
   </script>
 
 </body>

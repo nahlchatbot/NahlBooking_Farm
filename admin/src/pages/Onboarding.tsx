@@ -20,6 +20,7 @@ interface OnboardingChalet {
   maxGuests: number;
   description?: string;
   amenities?: string[];
+  imageUrl?: string;
 }
 
 interface OnboardingSubmission {
@@ -40,6 +41,9 @@ interface OnboardingSubmission {
   adminEmail: string;
   adminPhone: string;
   notes?: string;
+  logoUrl?: string;
+  heroImageUrl?: string;
+  galleryUrls?: string[];
   status: 'NEW' | 'IN_PROGRESS' | 'COMPLETED';
   createdAt: string;
 }
@@ -316,6 +320,54 @@ export default function Onboarding() {
               <div className="text-gray-600">{selectedSubmission.resortNameEn}</div>
             </div>
 
+            {/* Logo */}
+            {selectedSubmission.logoUrl && (
+              <div className="p-4 bg-gray-50 rounded-lg">
+                <div className="text-xs text-gray-500 mb-2">
+                  {isRTL ? 'الشعار' : 'Logo'}
+                </div>
+                <img
+                  src={selectedSubmission.logoUrl}
+                  alt="Logo"
+                  className="w-24 h-24 object-contain rounded-lg border border-gray-200 bg-white p-2"
+                />
+              </div>
+            )}
+
+            {/* Hero Image */}
+            {selectedSubmission.heroImageUrl && (
+              <div className="p-4 bg-gray-50 rounded-lg">
+                <div className="text-xs text-gray-500 mb-2">
+                  {isRTL ? 'الصورة الرئيسية' : 'Hero Image'}
+                </div>
+                <img
+                  src={selectedSubmission.heroImageUrl}
+                  alt="Hero"
+                  className="w-full max-h-48 object-cover rounded-lg border border-gray-200"
+                />
+              </div>
+            )}
+
+            {/* Gallery */}
+            {selectedSubmission.galleryUrls && selectedSubmission.galleryUrls.length > 0 && (
+              <div className="p-4 bg-gray-50 rounded-lg">
+                <div className="text-xs text-gray-500 mb-2">
+                  {isRTL ? 'صور المعرض' : 'Gallery'} ({selectedSubmission.galleryUrls.length})
+                </div>
+                <div className="grid grid-cols-4 gap-2">
+                  {selectedSubmission.galleryUrls.map((url, idx) => (
+                    <a key={idx} href={url} target="_blank" rel="noopener noreferrer">
+                      <img
+                        src={url}
+                        alt={`Gallery ${idx + 1}`}
+                        className="w-full h-24 object-cover rounded-lg border border-gray-200 hover:opacity-80 transition-opacity cursor-pointer"
+                      />
+                    </a>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {/* Chalets */}
             <div className="p-4 bg-gray-50 rounded-lg">
               <div className="text-xs text-gray-500 mb-3">
@@ -340,6 +392,13 @@ export default function Onboarding() {
                     </div>
                     {chalet.description && (
                       <p className="text-sm text-gray-500 mt-1">{chalet.description}</p>
+                    )}
+                    {chalet.imageUrl && (
+                      <img
+                        src={chalet.imageUrl}
+                        alt={isRTL ? chalet.nameAr : chalet.nameEn}
+                        className="w-full h-32 object-cover rounded-lg border border-gray-200 mt-2"
+                      />
                     )}
                     {chalet.amenities && chalet.amenities.length > 0 && (
                       <div className="flex flex-wrap gap-1.5 mt-2">

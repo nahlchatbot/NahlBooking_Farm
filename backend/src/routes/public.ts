@@ -17,8 +17,20 @@ import {
 } from '../types/validation.js';
 import { bookingLimiter, otpLimiter } from '../middleware/rateLimiter.js';
 import prisma from '../config/database.js';
+import { config } from '../config/index.js';
 
 const router = Router();
+
+// GET /api/config - Public configuration for frontend
+router.get('/config', (req, res) => {
+  res.json({
+    ok: true,
+    data: {
+      cloudinaryCloudName: config.cloudinary.cloudName,
+      cloudinaryUploadPreset: config.cloudinary.uploadPreset,
+    },
+  });
+});
 
 // GET /api/availability - Check date availability
 router.get(

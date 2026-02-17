@@ -33,6 +33,12 @@ export const config = {
     apiToken: process.env.GREENAPI_API_TOKEN || '',
   },
 
+  // Cloudinary (public config - safe to expose)
+  cloudinary: {
+    cloudName: process.env.CLOUDINARY_CLOUD_NAME || '',
+    uploadPreset: process.env.CLOUDINARY_UPLOAD_PRESET || 'nahl_onboarding',
+  },
+
   // CORS
   corsOrigins: process.env.CORS_ORIGINS?.split(',') || [
     'http://localhost:3000',
