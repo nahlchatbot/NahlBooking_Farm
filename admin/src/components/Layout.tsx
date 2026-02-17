@@ -146,7 +146,7 @@ export default function Layout() {
           </div>
 
           {/* Navigation */}
-          <nav className="flex-1 p-4 space-y-1">
+          <nav className="flex-1 p-4 space-y-0.5 overflow-y-auto">
             {navItems
               .filter((item) => !item.requireSuperAdmin || user?.role === 'SUPER_ADMIN')
               .map((item) => (
@@ -156,7 +156,7 @@ export default function Layout() {
                   end={item.path === '/'}
                   onClick={() => setSidebarOpen(false)}
                   className={({ isActive }) =>
-                    `flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
+                    `flex items-center gap-3 px-4 py-2.5 rounded-lg transition-colors text-sm ${
                       isActive
                         ? 'bg-primary-50 text-primary-700 font-medium'
                         : 'text-gray-600 hover:bg-gray-50'
