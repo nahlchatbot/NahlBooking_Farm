@@ -879,7 +879,8 @@
         var fd = new FormData();
         fd.append('file', file);
         fd.append('upload_preset', UPLOAD_PRESET);
-        fd.append('folder', 'onboarding/' + folder);
+        var resortName = (document.getElementById('resortNameEn').value.trim() || 'unnamed').replace(/[^a-zA-Z0-9_-]/g, '_').substring(0, 40);
+        fd.append('folder', 'onboarding/' + resortName + '/' + folder);
         var xhr = new XMLHttpRequest();
         xhr.open('POST', 'https://api.cloudinary.com/v1_1/' + CLOUD_NAME + '/image/upload');
         xhr.upload.onprogress = function(e) {
