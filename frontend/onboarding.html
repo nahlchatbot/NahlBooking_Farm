@@ -1087,7 +1087,7 @@
       cards.forEach(function(card) {
         var nameAr = card.querySelector('.chalet-name-ar').value.trim();
         var nameEn = card.querySelector('.chalet-name-en').value.trim();
-        var maxGuests = parseInt(card.querySelector('.chalet-max-guests').value) || 0;
+        var maxGuests = parseInt(card.querySelector('.chalet-max-guests').value) || 1;
         var description = card.querySelector('.chalet-description').value.trim();
         var amenities = [];
         card.querySelectorAll('.amenities-grid input[type="checkbox"]:checked').forEach(function(cb) {
@@ -1209,7 +1209,11 @@
         if (!response.ok) {
           var errData = {};
           try { errData = await response.json(); } catch(e) {}
-          throw new Error(errData.message || 'حدث خطأ أثناء إرسال الطلب');
+          var errMsg = errData.message || 'حدث خطأ أثناء إرسال الطلب';
+          if (errData.errors && errData.errors.length) {
+            errMsg += ':\n' + errData.errors.map(function(e) { return e.field + ': ' + e.message; }).join('\n');
+          }
+          throw new Error(errMsg);
         }
 
         // Success
