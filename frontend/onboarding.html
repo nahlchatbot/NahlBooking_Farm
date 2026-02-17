@@ -1128,6 +1128,86 @@
       return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
     }
 
+    /* ── Field name translations ── */
+    var fieldLabels = {
+      'resortNameAr': 'اسم المنتجع بالعربية',
+      'resortNameEn': 'اسم المنتجع بالإنجليزية',
+      'whatsappNumber': 'رقم الواتساب',
+      'adminName': 'اسم المسؤول',
+      'adminEmail': 'البريد الإلكتروني',
+      'adminPhone': 'رقم جوال المسؤول',
+      'pricing': 'الأسعار',
+      'location': 'الموقع',
+      'domain': 'الدومين',
+      'notes': 'الملاحظات',
+      'cancellationHrs': 'ساعات الإلغاء',
+    };
+
+    var fieldToInput = {
+      'resortNameAr': 'resortNameAr',
+      'resortNameEn': 'resortNameEn',
+      'whatsappNumber': 'whatsapp',
+      'adminName': 'adminName',
+      'adminEmail': 'adminEmail',
+      'adminPhone': 'adminPhone',
+    };
+
+    function showServerErrors(errors) {
+      clearErrors();
+      var firstErrorEl = null;
+      errors.forEach(function(err) {
+        var field = err.field;
+        // Map field to input element
+        var inputId = fieldToInput[field];
+        if (inputId) {
+          var input = document.getElementById(inputId);
+          if (input) {
+            input.classList.add('input-error');
+            // Show error message next to field
+            var errEl = input.parentElement.querySelector('.field-error');
+            if (errEl) {
+              errEl.textContent = getArabicError(field, err.message);
+              errEl.classList.add('visible');
+            }
+            if (!firstErrorEl) firstErrorEl = input;
+          }
+        }
+        // Handle chalet field errors like "chalets.0.nameAr"
+        if (field.startsWith('chalets.')) {
+          var parts = field.split('.');
+          var chaletIdx = parseInt(parts[1]);
+          var chaletField = parts[2];
+          var cards = document.querySelectorAll('.chalet-card');
+          if (cards[chaletIdx]) {
+            var card = cards[chaletIdx];
+            var selector = {
+              'nameAr': '.chalet-name-ar',
+              'nameEn': '.chalet-name-en',
+              'maxGuests': '.chalet-max-guests',
+            }[chaletField];
+            if (selector) {
+              var inp = card.querySelector(selector);
+              if (inp) {
+                inp.classList.add('input-error');
+                if (!firstErrorEl) firstErrorEl = inp;
+              }
+            }
+          }
+        }
+      });
+      if (firstErrorEl) {
+        firstErrorEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }
+
+    function getArabicError(field, message) {
+      var label = fieldLabels[field] || field;
+      if (message.includes('at least')) return label + ' — يرجى إدخال قيمة صحيحة';
+      if (message.includes('email')) return 'يرجى إدخال بريد إلكتروني صالح';
+      if (message.includes('Required')) return 'هذا الحقل مطلوب';
+      return label + ' — ' + message;
+    }
+
     /* ── Submit form ── */
     async function submitForm() {
       clearErrors();
@@ -1209,11 +1289,11 @@
         if (!response.ok) {
           var errData = {};
           try { errData = await response.json(); } catch(e) {}
-          var errMsg = errData.message || 'حدث خطأ أثناء إرسال الطلب';
           if (errData.errors && errData.errors.length) {
-            errMsg += ':\n' + errData.errors.map(function(e) { return e.field + ': ' + e.message; }).join('\n');
+            showServerErrors(errData.errors);
+            throw new Error('يرجى تصحيح الحقول المحددة أدناه');
           }
-          throw new Error(errMsg);
+          throw new Error(errData.message || 'حدث خطأ أثناء إرسال الطلب');
         }
 
         // Success
